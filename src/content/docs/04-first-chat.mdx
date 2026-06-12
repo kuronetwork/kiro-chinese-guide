@@ -1,0 +1,87 @@
+---
+title: 第一次對話
+description: 啟動 chat、互動模式跟 headless 模式、常用快捷鍵跟斜線指令。
+section: 對話
+order: 200
+---
+import Callout from '../../components/Callout.astro';
+
+`chat` 是 Kiro CLI 的核心,所有開發任務都從這裡開始。
+
+## 啟動互動對話
+
+進到你的專案資料夾,打:
+
+```bash
+kiro-cli chat
+```
+
+進去之後,直接用自然語言把任務講出來:
+
+```text
+❯ 這個專案用了哪些框架?幫我整理一份清單
+❯ 把 src/utils.ts 裡的 getUserName 改名成 getUsername,所有引用都要改
+❯ 跑測試,如果有失敗的幫我修
+```
+
+## 帶著問題直接啟動
+
+你也可以把第一個問題當參數,一起帶進去:
+
+```bash
+kiro-cli chat "列出目前資料夾的所有檔案"
+```
+
+## Headless 模式(無人值守)
+
+加上 `--no-interactive`,它就會做完一件事直接結束,不等你輸入。拿來寫腳本、做自動化很合適:
+
+```bash
+kiro-cli chat --no-interactive "跑 npm test 並總結結果"
+```
+
+<Callout type="warn">
+Headless 模式下,工具如果需要核准、卻沒人在旁邊按,指令就會卡住。所以無人值守的時候,記得搭配信任 flag 一起用(後面兩章會細講):
+
+```bash
+kiro-cli chat --no-interactive --trust-tools=read,grep "找出所有 TODO"
+```
+</Callout>
+
+## 常用斜線指令
+
+在對話裡,`/` 開頭的就是斜線指令,用來控制這次的 session:
+
+| 指令 | 用途 |
+| --- | --- |
+| `/help` | 顯示說明 |
+| `/model` | 切換模型 |
+| `/effort` | 調整推理強度 |
+| `/tools` | 查看/信任工具 |
+| `/agent` | 切換 agent |
+| `/chat save` | 儲存這次對話 |
+| `/chat load` | 載入先前對話 |
+| `/usage` | 查看用量 |
+
+## 常用快捷鍵
+
+| 按鍵 | 功能 |
+| --- | --- |
+| `Ctrl+R` | 搜尋指令歷史 |
+| `Ctrl+C` | 取消目前動作或離開 |
+| `↑` / `↓` | 瀏覽歷史輸入 |
+
+## TUI 與 classic 模式
+
+預設會用內嵌的 TUI 介面。如果你的 Terminal 相容性有狀況,可以切回傳統介面:
+
+```bash
+kiro-cli chat --classic     # 傳統(legacy)介面
+kiro-cli chat --tui         # 明確指定 TUI 介面
+```
+
+<Callout type="tip">
+對話記錄是**照資料夾**分開存的。你在 A 專案資料夾聊的東西,不會跟 B 專案混在一起,`--resume` 也只會抓你現在這個資料夾的。
+</Callout>
+
+下一章:來挑模型、調 effort。

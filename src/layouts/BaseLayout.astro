@@ -1,0 +1,46 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = 'Kiro CLI 繁體中文教學 — 從零到自動化的完整學習路徑。' } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#0d1117" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href={`${base}/favicon.svg`} type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle" aria-label="開關選單">≡</button>
+      <span class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></span>
+      <a class="title" href={`${base}/`}><b>kiro-cli</b>&nbsp;guide&nbsp;—&nbsp;繁中教學</a>
+      <span class="spacer"></span>
+    </header>
+    <div class="layout">
+      <slot />
+    </div>
+    <script>
+      const toggle = document.getElementById('menuToggle');
+      const scrim = document.getElementById('navScrim');
+      toggle?.addEventListener('click', () => document.body.classList.toggle('nav-open'));
+      scrim?.addEventListener('click', () => document.body.classList.remove('nav-open'));
+      document.querySelectorAll('.sidebar a').forEach((a) =>
+        a.addEventListener('click', () => document.body.classList.remove('nav-open'))
+      );
+    </script>
+  </body>
+</html>

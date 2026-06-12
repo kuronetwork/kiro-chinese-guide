@@ -1,0 +1,70 @@
+---
+title: Shell 整合與主題
+description: init 產生 shell 整合、inline 行內補全、translate 白話轉指令、theme 主題。
+section: 客製環境
+order: 610
+---
+import Callout from '../../components/Callout.astro';
+
+這章要把 Kiro 更深地塞進你每天用的 Terminal 裡。
+
+## theme:主題
+
+```bash
+kiro-cli theme --list       # 看有哪些主題
+kiro-cli theme              # 看目前主題
+kiro-cli theme <名稱>       # 套用主題
+kiro-cli theme --folder     # 顯示主題資料夾位置
+```
+
+## translate:自然語言轉指令
+
+指令怎麼打忘記了?用白話講一遍,讓 Kiro 幫你翻成 shell 指令:
+
+```bash
+kiro-cli translate 找出這個資料夾裡最大的 5 個檔案
+kiro-cli translate 把所有 .log 檔壓縮成 logs.tar.gz
+```
+
+<Callout type="tip">
+`translate` 最適合那種「我知道要幹嘛,但指令記不起來」的時候。它先給你指令,你看過確認,再自己執行。
+</Callout>
+
+## init:產生 shell 整合
+
+`init` 會幫你產生對應 shell 的整合 dotfiles,bash / zsh / fish / nu 都支援:
+
+```bash
+# 在 .zshrc 適當位置(前/後)載入
+eval "$(kiro-cli init zsh pre)"
+eval "$(kiro-cli init zsh post)"
+```
+
+`<WHEN>` 填 `pre` 或 `post`,決定它在你的 rc 檔前段還是後段載入。
+
+## inline:行內自動補全
+
+你在打指令的時候,它會即時給你行內補全建議:
+
+```bash
+kiro-cli inline status      # 看目前狀態
+kiro-cli inline enable      # 啟用
+kiro-cli inline disable     # 停用
+kiro-cli inline show-customizations   # 看可用的客製
+kiro-cli inline set-customization     # 選一個客製
+```
+
+## integrations:系統整合
+
+```bash
+kiro-cli integrations status      # 狀態
+kiro-cli integrations install     # 安裝
+kiro-cli integrations reinstall   # 重裝
+kiro-cli integrations uninstall   # 移除
+```
+
+<Callout type="warn">
+`init` 印出來的東西會被你的 shell `eval` 執行掉。請貼進你自己的 rc 檔(像 `~/.zshrc`),千萬別把來路不明的內容直接 pipe 進 `eval`。
+</Callout>
+
+到這裡核心功能就學得差不多了。接下來用實戰場景,把它們串成一條龍。

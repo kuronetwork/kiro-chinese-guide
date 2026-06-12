@@ -1,0 +1,91 @@
+---
+title: 三種自動化模式
+description: 把信任設定組成「安全又自動 / 接近全自動 / 全自動」三種開機指令,再做成 alias。
+section: 工具與信任
+order: 310
+---
+import Callout from '../../components/Callout.astro';
+
+上一章的信任機制,這章把它落地成三種你每天會用到的模式。差別就在「多少動作免核准」。
+
+## 模式一:安全又自動(日常推薦)
+
+```bash
+kiro-cli chat
+```
+
+搭一個設好 `allowedTools`(讀的動作免核准)、再加上 shell 白名單的 agent:
+
+- 讀檔、搜尋,免核准
+- 白名單裡的指令(`git`、`npm`、`pnpm`…)自動放行
+- 寫檔、還有白名單以外的指令,還是會問你
+
+→ 夠自動又守得住,大多數時候用這個就對了。
+
+## 模式二:接近全自動(信得過的專案)
+
+```bash
+kiro-cli chat --trust-tools=read,write,grep,glob,code
+```
+
+- 在模式一的基礎上,**連寫檔也免核准**
+- shell 還是有 agent 白名單把關
+
+→ 放手讓它改檔,但任意指令還是擋著。
+
+## 模式三:全自動(放手跑 / 批次)
+
+```bash
+kiro-cli chat --trust-all-tools
+```
+
+- **所有工具都免核准,包含任意 shell**
+
+沒人看著、跑完就結束的版本:
+
+```bash
+kiro-cli chat --trust-all-tools --no-interactive "讀完專案,完成 TODO、補測試並執行,最後總結"
+```
+
+<Callout type="danger">
+模式三會放行 `rm`、`sudo` 這類任意指令。只在你信得過、壞了也無所謂的環境用,別拿來對重要資料夾或正式環境跑。
+</Callout>
+
+## 做成 alias
+
+把三種模式寫進 `~/.zshrc`(或 `~/.bashrc`),以後打個簡稱就好:
+
+```bash
+alias k='kiro-cli chat'                                          # 模式一
+alias kw='kiro-cli chat --trust-tools=read,write,grep,glob,code' # 模式二
+alias kauto='kiro-cli chat --trust-all-tools'                    # 模式三
+```
+
+存檔後重新載入:
+
+```bash
+source ~/.zshrc
+```
+
+## 批次跑多個專案
+
+模式三配上 headless,就能掃過好幾個資料夾平行跑:
+
+```bash
+#!/usr/bin/env bash
+projects=(~/proj/a ~/proj/b ~/proj/c)
+for p in "${projects[@]}"; do
+  ( cd "$p" && kiro-cli chat --trust-all-tools --no-interactive \
+      "完成這個專案的 TODO 並跑測試,最後總結" > kiro-run.log 2>&1 ) &
+done
+wait
+echo "全部完成,各專案結果見 kiro-run.log"
+```
+
+每個專案都在自己的資料夾裡跑,log 各自分開,對話又依目錄隔離,彼此不會撞在一起。
+
+<Callout type="tip">
+`--trust-tools` 跟 `--trust-all-tools` 都只是**這一次 session** 的信任,關掉就沒了,不會弄髒你的預設設定。想要永久免核准,就寫進 agent 的 `allowedTools`。
+</Callout>
+
+下一段我們進到 agent 設定,把這些信任變成可以重複使用的角色。

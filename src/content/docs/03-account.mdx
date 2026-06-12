@@ -1,0 +1,60 @@
+---
+title: 登入與帳號
+description: 登入、登出、確認身分跟查看方案,還有帳號相關的指令。
+section: 開始
+order: 120
+---
+import Callout from '../../components/Callout.astro';
+
+想用 Kiro CLI 的 AI 功能,得先登入帳號。
+
+## 登入
+
+```bash
+kiro-cli login
+```
+
+照著畫面的指示把驗證走完就行。登入狀態會幫你存著,不用每次都重登。
+
+## 確認目前身分
+
+```bash
+kiro-cli whoami
+```
+
+它會把你現在登入的帳號資訊秀出來。不確定自己用的是哪個帳號、或懷疑根本沒登入,這個就很好用。
+
+## 查看 profile
+
+```bash
+kiro-cli profile
+```
+
+會顯示跟目前 IdC 使用者綁在一起的 profile。
+
+## 登出
+
+```bash
+kiro-cli logout
+```
+
+## 用 user 統一管理
+
+上面這些指令,其實也都收在 `user` 底下,功能一模一樣:
+
+```bash
+kiro-cli user login
+kiro-cli user logout
+kiro-cli user whoami
+kiro-cli user profile
+```
+
+<Callout type="tip">
+如果 AI 回你驗證相關的錯誤,先 `kiro-cli whoami` 看看登入狀態。需要的話,`kiro-cli logout` 再 `kiro-cli login` 重新登入一次。
+</Callout>
+
+<Callout type="warn">
+帳號憑證是很敏感的東西。登入後產生的設定檔、快取檔,內容別貼到公開的地方,也不要 commit 進版控。
+</Callout>
+
+帳號搞定,接下來就是主角登場:`chat`。

@@ -1,0 +1,90 @@
+---
+title: MCP 整合
+description: 用 Model Context Protocol 把 git、GitHub、瀏覽器、文件這些外部工具接進 Kiro。
+section: 進階自動化
+order: 520
+---
+import Callout from '../../components/Callout.astro';
+
+MCP(Model Context Protocol)讓 Kiro 連上外部的工具伺服器,把能力撐大。像是操作 git、查 GitHub、控制瀏覽器、讀官方文件,都可以。
+
+## 管理 MCP 伺服器
+
+```bash
+kiro-cli mcp list                 # 列出已設定的伺服器
+kiro-cli mcp status               # 查看某伺服器狀態
+kiro-cli mcp add ...              # 新增/取代
+kiro-cli mcp remove ...           # 移除
+kiro-cli mcp import ...           # 從其他設定檔匯入
+```
+
+## 新增一個本地(stdio)伺服器
+
+```bash
+kiro-cli mcp add \
+  --name git \
+  --command mcp-server-git \
+  --args "--stdio" \
+  --scope global
+```
+
+常用的 flag:
+
+| flag | 說明 |
+| --- | --- |
+| `--name` | 伺服器名稱 |
+| `--command` | 啟動指令(stdio 伺服器必填) |
+| `--url` | HTTP 伺服器的端點(HTTP 伺服器必填) |
+| `--args` | 傳給指令的參數(可多次或用 JSON 陣列) |
+| `--env` | 環境變數 |
+| `--scope` | `default` / `workspace` / `global` |
+| `--agent` | 加到特定 agent(省略則寫入全域 mcp.json) |
+| `--timeout` | 啟動逾時(毫秒) |
+| `--disabled` | 加入但先不載入 |
+| `--force` | 覆蓋同名伺服器 |
+
+## 新增一個遠端(HTTP)伺服器
+
+```bash
+kiro-cli mcp add \
+  --name remote-api \
+  --url https://mcp.example.com/sse \
+  --scope global
+```
+
+## 直接寫進 agent 設定
+
+你也可以直接在 agent 的 `mcpServers` 裡定義:
+
+```json
+{
+  "mcpServers": {
+    "git": { "command": "mcp-server-git", "args": ["--stdio"] },
+    "github": {
+      "command": "mcp-server-github",
+      "args": ["--stdio"],
+      "env": { "GITHUB_TOKEN": "$GITHUB_TOKEN" }
+    }
+  }
+}
+```
+
+## 信任 MCP 工具
+
+MCP 工具的名稱長這樣:`@<伺服器>/<工具>`。把它們放進 `allowedTools` 就是信任它們:
+
+```json
+{
+  "allowedTools": ["@git/*", "@github/get_*", "@github/list_*"]
+}
+```
+
+<Callout type="tip">
+加完之後,用 `kiro-cli mcp status` 確認伺服器有正常起來。想知道這台伺服器給了哪些工具、名稱怎麼拼,在對話裡打 `/tools` 就看得到。
+</Callout>
+
+<Callout type="warn">
+MCP 伺服器是外部程式,會直接在你的機器上跑。所以只加你信得過的來源。`env` 裡的權杖(token)記得用環境變數帶進來(像 `$GITHUB_TOKEN`),別把明文寫死在設定檔裡然後 commit 上去。
+</Callout>
+
+進階自動化就到這。接下來,來客製你自己的環境。

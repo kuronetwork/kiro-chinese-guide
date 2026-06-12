@@ -1,0 +1,113 @@
+---
+title: Agent 設定
+description: 用 agent 把模型、工具、信任、脈絡打包成可重用的角色,還能建立、編輯、驗證與設定預設。
+section: Agent
+order: 400
+---
+import Callout from '../../components/Callout.astro';
+
+Agent 就是一份 JSON 設定。它把「這個角色能用哪些工具、信任到什麼程度、要載入哪些脈絡、用哪個模型」全部打包在一起,讓你拿來重複使用。
+
+## 管理指令
+
+```bash
+kiro-cli agent list                 # 列出可用 agent(本地 agent 需在該目錄才看得到)
+kiro-cli agent create my-agent      # 建立(預設存到全域目錄)
+kiro-cli agent create my-agent -f default   # 以現有 agent 為範本
+kiro-cli agent edit my-agent        # 編輯
+kiro-cli agent validate --path ~/.kiro/agents/my-agent.json   # 驗證
+kiro-cli agent set-default my-agent # 設為 chat 啟動時的預設
+```
+
+啟動時想用哪個 agent,就這樣指定:
+
+```bash
+kiro-cli chat --agent my-agent
+```
+
+## 存放位置與優先序
+
+- **本地(專案)**:`.kiro/agents/<name>.json`
+- **全域(使用者)**:`~/.kiro/agents/<name>.json`
+
+兩邊同名的時候,**本地會贏過全域**。所以你可以針對某個專案,單獨把設定覆寫掉。
+
+## 設定結構
+
+一份典型的 agent 長這樣:
+
+```json
+{
+  "name": "dev",
+  "description": "專案開發用 agent",
+  "prompt": "你是資深工程師,重視安全與可讀性。",
+  "model": "claude-opus-4.8",
+  "tools": ["read", "write", "shell", "grep", "glob", "code"],
+  "allowedTools": ["read", "grep", "glob", "code"],
+  "toolsSettings": {
+    "write": { "allowedPaths": ["./src/**", "./tests/**"], "deniedPaths": ["./.env"] },
+    "shell": { "allowedCommands": ["^npm ", "^git "], "autoAllowReadonly": true }
+  },
+  "resources": ["file://README.md", "file://src/**/*.ts"],
+  "hooks": {
+    "agentSpawn": [{ "command": "node -v && npm -v" }]
+  },
+  "mcpServers": {}
+}
+```
+
+### 重要欄位速覽
+
+| 欄位 | 作用 |
+| --- | --- |
+| `prompt` | 系統提示,定義角色與行為(可用 `file://` 引用外部檔) |
+| `tools` | 這個 agent 可使用的工具 |
+| `allowedTools` | 免核准的工具(永久信任) |
+| `toolsSettings` | 工具的細部規則(路徑、指令、網址白名單) |
+| `resources` | 啟動時載入的脈絡檔(`file://`、`skill://`) |
+| `hooks` | 在特定時機自動執行的指令 |
+| `model` | 指定模型 |
+| `mcpServers` | 這個 agent 要連的 MCP 伺服器 |
+
+## resources:餵脈絡
+
+想讓 agent 一啟動就把關鍵檔案讀進來:
+
+```json
+{
+  "resources": [
+    "file://README.md",
+    "file://src/**/*.ts",
+    "skill://.kiro/skills/**/SKILL.md"
+  ]
+}
+```
+
+- `file://` 開頭的一定會載入
+- `skill://` 是用到才載入的技能,一開始只先讀 metadata
+
+## hooks:自動掛鉤
+
+在特定時機自動跑指令。比如啟動時印出環境版本,或寫檔前先 `git diff` 看一下:
+
+```json
+{
+  "hooks": {
+    "agentSpawn":   [{ "command": "git status" }],
+    "preToolUse":   [{ "matcher": "write", "command": "git diff" }],
+    "postToolUse":  [{ "matcher": "shell", "command": "echo done" }]
+  }
+}
+```
+
+能掛鉤的時機有這些:`agentSpawn`、`userPromptSubmit`、`preToolUse`、`postToolUse`、`stop`。
+
+<Callout type="tip">
+不想從頭寫?最快的方式是用 `kiro-cli agent create my-agent -f default`,拿你現有的 default 當範本,改幾個欄位就好。改完記得用 `kiro-cli agent validate` 檢查一下 JSON 跟 schema 有沒有問題。
+</Callout>
+
+<Callout type="warn">
+`agent migrate` 會把舊的 profile 轉成 agent。文件有特別標註,這個動作對全域目錄裡已經存在的 agent **可能有破壞性**。執行前,先把 `~/.kiro/agents/` 備份起來。
+</Callout>
+
+角色能重複用之後,下一段就來讓多個 agent 一起平行幹活。

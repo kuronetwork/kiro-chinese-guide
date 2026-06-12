@@ -1,0 +1,9 @@
+---
+interface Props { type?: 'tip' | 'warn' | 'danger' }
+const { type = 'tip' } = Astro.props;
+const ico = type === 'tip' ? 'TIP' : type === 'warn' ? '!' : '✕';
+---
+<div class={`callout ${type}`}>
+  <span class="ico">{ico}</span>
+  <p><slot /></p>
+</div>

@@ -1,0 +1,35 @@
+---
+import { getCollection } from 'astro:content';
+
+interface Props { current: string }
+const { current } = Astro.props;
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const docs = (await getCollection('docs')).sort((a, b) => a.data.order - b.data.order);
+
+// 依 section 分組,保留第一次出現的順序
+const groups: { label: string; items: typeof docs }[] = [];
+for (const doc of docs) {
+  let g = groups.find((x) => x.label === doc.data.section);
+  if (!g) { g = { label: doc.data.section, items: [] }; groups.push(g); }
+  g.items.push(doc);
+}
+---
+<nav class="sidebar" aria-label="章節導覽">
+  {groups.map((g) => (
+    <div class="group">
+      <div class="group-label">{g.label}</div>
+      {g.items.map((item) => (
+        <a
+          class={`navlink${item.id === current ? ' active' : ''}`}
+          href={`${base}/${item.id}/`}
+          aria-current={item.id === current ? 'page' : undefined}
+        >
+          {item.data.title}
+        </a>
+      ))}
+    </div>
+  ))}
+</nav>
+<div class="nav-scrim" id="navScrim"></div>

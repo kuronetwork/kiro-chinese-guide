@@ -1,0 +1,109 @@
+---
+title: 指令速查表
+description: Kiro CLI 2.6.1 的全部頂層指令、chat 常用 flag,還有對話中的斜線指令,一次對照。
+section: 參考
+order: 900
+---
+import Callout from '../../components/Callout.astro';
+
+這份以 **Kiro CLI 2.6.1** 為準。但最即時的答案永遠是 `kiro-cli <指令> --help`。
+
+## 頂層指令
+
+| 指令 | 用途 |
+| --- | --- |
+| `chat` | Terminal 裡的 AI 助手(核心) |
+| `agent` | 管理 AI agent |
+| `mcp` | 管理 MCP 伺服器 |
+| `acp` | Agent Client Protocol |
+| `settings` | 客製外觀與行為 |
+| `theme` | 取得/設定主題 |
+| `init` | 產生 shell 整合 dotfiles |
+| `inline` | 行內 shell 補全 |
+| `translate` | 自然語言轉 shell 指令 |
+| `integrations` | 管理系統整合 |
+| `login` / `logout` | 登入 / 登出 |
+| `whoami` / `profile` | 顯示身分 / profile |
+| `user` | 帳號管理(含 login/logout/whoami/profile) |
+| `update` | 更新 Kiro |
+| `setup` | 設定 CLI 元件 |
+| `doctor` | 診斷並修復常見問題 |
+| `diagnostic` | 輸出診斷資訊 |
+| `debug` | 進階除錯 |
+| `issue` | 開 GitHub issue |
+| `dashboard` | 開啟儀表板 |
+| `launch` / `quit` / `restart` | 啟動 / 結束 / 重啟桌面 app |
+
+## chat 常用 flag
+
+| flag | 說明 |
+| --- | --- |
+| `--agent <名稱>` | 指定 agent |
+| `--model <模型>` | 指定模型 |
+| `--effort <等級>` | 推理強度 low/medium/high/xhigh/max |
+| `-a, --trust-all-tools` | 全工具免核准 |
+| `--trust-tools=a,b` | 只信任指定工具(`--trust-tools=` 為不信任任何) |
+| `--no-interactive` | headless,跑完即結束 |
+| `-r, --resume` | 接續最近一次對話 |
+| `--resume-id <ID>` | 接續特定 session |
+| `--resume-picker` | 互動選單挑對話接續 |
+| `-l, --list-sessions` | 列出此資料夾的對話 |
+| `--list-models` | 列出可用模型 |
+| `-d, --delete-session <ID>` | 刪除對話 |
+| `--tui` / `--classic` | TUI / 傳統介面 |
+| `-v` | 提高 log 詳細度(可重複) |
+
+## 對話中的斜線指令
+
+| 指令 | 用途 |
+| --- | --- |
+| `/help` | 說明 |
+| `/model [名稱]` | 切換模型 / 開選單 |
+| `/effort [等級]` | 調整推理強度 |
+| `/tools` | 查看工具 |
+| `/tools trust <工具>` | session 信任某工具 |
+| `/tools trust-all` | session 信任全部 |
+| `/tools reset` | 還原成 agent 預設 |
+| `/agent` | 切換 agent |
+| `/chat save <名稱>` | 儲存對話 |
+| `/chat load <名稱>` | 載入對話 |
+| `/knowledge` | 管理知識庫 |
+| `/usage` | 查看用量 |
+
+## agent 指令
+
+```bash
+kiro-cli agent list
+kiro-cli agent create <名稱> [-f 範本] [-d 目錄]
+kiro-cli agent edit <名稱>
+kiro-cli agent validate --path <檔案>
+kiro-cli agent set-default <名稱>
+```
+
+## mcp 指令
+
+```bash
+kiro-cli mcp list
+kiro-cli mcp status
+kiro-cli mcp add --name <名> --command <指令> [--args ...] [--scope global]
+kiro-cli mcp add --name <名> --url <URL>
+kiro-cli mcp remove --name <名>
+kiro-cli mcp import ...
+```
+
+## settings 指令
+
+```bash
+kiro-cli settings <key> <value>      # 設定
+kiro-cli settings <key>              # 讀取
+kiro-cli settings --delete <key>     # 刪除
+kiro-cli settings list [--all]       # 列出
+kiro-cli settings open               # 編輯器打開
+# 範圍:--global(預設) / --workspace
+```
+
+<Callout type="tip">
+任何指令後面加 `--help` 就能看到完整選項;`kiro-cli --help-all` 則會一口氣列出所有子指令。這張表是常用整理,不是全部細節。
+</Callout>
+
+學完啦!回首頁可以看到完整的學習路徑,或挑一章回頭複習。

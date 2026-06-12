@@ -1,0 +1,43 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Sidebar from '../components/Sidebar.astro';
+
+interface NavItem { id: string; title: string }
+interface Props {
+  title: string;
+  description?: string;
+  section: string;
+  current: string;
+  prev?: NavItem | null;
+  next?: NavItem | null;
+}
+const { title, description, section, current, prev, next } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<BaseLayout title={`${title} · Kiro CLI 繁中教學`} description={description}>
+  <Sidebar current={current} />
+  <main class="content">
+    <div class="content-inner">
+      <div class="page-eyebrow">{section}</div>
+      <h1>{title}</h1>
+      {description && <p class="page-desc">{description}</p>}
+      <article class="prose">
+        <slot />
+      </article>
+      <nav class="pager" aria-label="章節切換">
+        {prev ? (
+          <a class="prev" href={`${base}/${prev.id}/`}>
+            <div class="dir">❮ 上一章</div>
+            <div class="lbl">{prev.title}</div>
+          </a>
+        ) : <span style="flex:1"></span>}
+        {next ? (
+          <a class="next" href={`${base}/${next.id}/`}>
+            <div class="dir">下一章 ❯</div>
+            <div class="lbl">{next.title}</div>
+          </a>
+        ) : <span style="flex:1"></span>}
+      </nav>
+    </div>
+  </main>
+</BaseLayout>

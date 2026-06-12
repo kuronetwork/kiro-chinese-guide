@@ -1,0 +1,89 @@
+---
+title: settings 設定全覽
+description: 用 settings 指令管理全域和工作區設定,順便看一遍最常用的設定鍵。
+section: 客製環境
+order: 600
+---
+import Callout from '../../components/Callout.astro';
+
+`settings` 是調整 Kiro CLI 行為的地方。你設好的東西會存起來,跨 session 都還在。
+
+## 基本操作
+
+```bash
+kiro-cli settings <key> <value>     # 設定
+kiro-cli settings <key>             # 讀取目前值
+kiro-cli settings --delete <key>    # 刪除
+kiro-cli settings list              # 列出已設定的項目
+kiro-cli settings list --all        # 列出所有可用設定(含未設定的)
+kiro-cli settings open              # 用編輯器打開設定檔
+```
+
+## 全域 vs 工作區
+
+```bash
+kiro-cli settings <key> <value> --global      # 全域(預設)
+kiro-cli settings <key> <value> --workspace   # 只在目前專案
+```
+
+- 全域:`~/.kiro/settings/cli.json`
+- 工作區:`.kiro/settings/cli.json`
+
+同一個鍵設在不同層會打架,這時誰贏?優先序是 **Session > Workspace > Global**,越靠近你手邊的越優先。
+
+## 值的型別
+
+- 布林:`true` / `false`
+- 字串:直接給
+- 數字:直接給
+- 陣列:JSON 格式,例如 `'["a","b"]'`
+
+## 最實用的設定鍵
+
+```bash
+# 預設模型與 agent
+kiro-cli settings chat.defaultModel claude-opus-4.8
+kiro-cli settings chat.defaultAgent dev
+
+# 開啟進階功能
+kiro-cli settings chat.enableSubagent true
+kiro-cli settings chat.enableKnowledge true
+kiro-cli settings chat.enableCodeIntelligence true
+kiro-cli settings chat.enableTodoList true
+kiro-cli settings chat.enableThinking true
+kiro-cli settings chat.enableNotifications true
+```
+
+| 設定 | 作用 |
+| --- | --- |
+| `chat.defaultModel` | 新 session 的預設模型 |
+| `chat.defaultAgent` | 新 session 的預設 agent |
+| `chat.enableSubagent` | 啟用 subagent 平行 |
+| `chat.enableKnowledge` | 啟用知識庫 |
+| `chat.enableCodeIntelligence` | 啟用程式碼智慧(LSP) |
+| `chat.enableTodoList` | 啟用任務清單 |
+| `chat.enableThinking` | 啟用 thinking |
+| `chat.enableNotifications` | 完成時桌面通知 |
+| `chat.disableAutoCompaction` | 關閉自動壓縮(保留完整脈絡,較耗用量) |
+| `telemetry.enabled` | 遙測開關 |
+
+<Callout type="tip">
+不知道有哪些設定可以調?跑 `kiro-cli settings list --all`,它會把所有可用的鍵和說明都列出來。想摸清楚有什麼能動,從這裡開始最快。
+</Callout>
+
+<Callout type="warn">
+`chat.disableAutoCompaction true` 會讓長對話保留完整脈絡,代價是更耗用量。而且對話一長,還是可能撞到 context 上限。平常就讓自動壓縮開著(預設本來就是開的),別去關它。
+</Callout>
+
+## 範例:一次設好「全自動開發」偏好
+
+```bash
+kiro-cli settings chat.defaultModel claude-opus-4.8
+kiro-cli settings chat.enableSubagent true
+kiro-cli settings chat.enableTodoList true
+kiro-cli settings chat.enableCodeIntelligence true
+kiro-cli settings chat.enableKnowledge true
+kiro-cli settings chat.enableNotifications true
+```
+
+下一章來看 shell 整合、主題,還有怎麼把白話轉成指令。

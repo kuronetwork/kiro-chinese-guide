@@ -1,0 +1,78 @@
+---
+title: 知識庫 knowledge
+description: 把程式碼、文件、PDF 索引進知識庫做語意搜尋,還能用設定調整索引行為。
+section: 進階自動化
+order: 510
+---
+import Callout from '../../components/Callout.astro';
+
+知識庫(knowledge)讓你把一大堆內容(程式碼、Markdown、CSV、PDF…)通通索引起來。之後 Kiro 就能對這些內容做**語意搜尋**,而且跨 session 一直留著。
+
+## 先開啟功能
+
+```bash
+kiro-cli settings chat.enableKnowledge true
+```
+
+重開 chat 之後就會生效。
+
+## 在對話中使用
+
+知識庫是用 `/knowledge` 這個斜線指令來管理。常見的動作像這樣:
+
+```text
+/knowledge            # 查看目前有哪些知識庫
+```
+
+你也可以直接用自然語言叫 Kiro 幫你做,例如:
+
+```text
+❯ 把 ./docs 這個資料夾加進知識庫
+❯ 在我的知識庫裡搜尋「資料庫連線設定」
+❯ 更新 docs 知識庫的索引
+```
+
+<Callout type="tip">
+不確定 `/knowledge` 底下有哪些子指令?在對話裡打 `/help` 看一下,或乾脆用自然語言講你想做什麼,讓 Kiro 幫你呼叫。
+</Callout>
+
+## 調整索引行為(settings)
+
+跟索引有關的偏好,都可以用 `kiro-cli settings` 來設定:
+
+```bash
+# 索引時要包含 / 排除的檔案樣式(JSON 陣列)
+kiro-cli settings knowledge.defaultIncludePatterns '["**/*.md","**/*.ts"]'
+kiro-cli settings knowledge.defaultExcludePatterns '["**/node_modules/**"]'
+
+# 最多索引幾個檔
+kiro-cli settings knowledge.maxFiles 5000
+
+# 文字切塊大小與重疊
+kiro-cli settings knowledge.chunkSize 1024
+kiro-cli settings knowledge.chunkOverlap 128
+
+# 索引類型:fast(BM25 關鍵字)或 best(語意)
+kiro-cli settings knowledge.indexType best
+```
+
+| 設定 | 說明 |
+| --- | --- |
+| `knowledge.defaultIncludePatterns` | 要納入索引的檔案樣式 |
+| `knowledge.defaultExcludePatterns` | 要排除的檔案樣式 |
+| `knowledge.maxFiles` | 索引檔案數上限 |
+| `knowledge.chunkSize` | 每個文字塊大小 |
+| `knowledge.chunkOverlap` | 文字塊之間的重疊 |
+| `knowledge.indexType` | `fast`(BM25)或 `best`(語意) |
+
+## 什麼時候用
+
+- 專案很大,想讓 Kiro 快速找到相關的段落
+- 手上有一批參考文件、規格或 PDF,想讓 Kiro 隨時能查
+- 想跨好幾次對話,把「背景知識」一直留著
+
+<Callout type="warn">
+索引一大堆檔案會吃時間也吃資源。建議先用 `includePatterns` / `excludePatterns` 把範圍縮小,順手把 `node_modules`、`dist` 這類東西排除掉。
+</Callout>
+
+下一章,來看怎麼用 MCP 把外部工具接進來。

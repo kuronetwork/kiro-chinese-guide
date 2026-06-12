@@ -1,0 +1,82 @@
+---
+title: 疑難排解
+description: 常見問題與對應指令:doctor、diagnostic、debug、log 位置與環境變數。
+section: 疑難排解
+order: 800
+---
+import Callout from '../../components/Callout.astro';
+
+出狀況的時候,該照什麼順序查、用哪些工具。
+
+## 第一步:doctor
+
+大多數環境問題,先跑這個就對了:
+
+```bash
+kiro-cli doctor          # 診斷並嘗試修復
+kiro-cli doctor --all    # 只診斷、列出所有檢查
+```
+
+## 收集環境資訊
+
+```bash
+kiro-cli diagnostic --format json-pretty
+```
+
+要開 issue 的時候,把這份資訊貼上去會很有幫助。
+
+## 常見問題對照
+
+| 症狀 | 可能原因 | 處理 |
+| --- | --- | --- |
+| Headless 卡住不動 | 工具需要核准但沒人能按 | 加 `--trust-all-tools` 或 `--trust-tools=...` |
+| `--resume` 找不到對話 | 不在原本的資料夾 | 對話是 per-directory,回到原目錄 |
+| 模型不可用 | 該區域沒有此模型或已下架 | `/model` 重選,或拿掉 `--model` 用預設 |
+| Agent not found | agent 名稱錯或檔案不存在 | `kiro-cli agent list` 確認 |
+| 工具加了 `allowedTools` 還是問 | 工具名稱拼錯 | `/tools` 看正確名稱,MCP 要 `@server/tool` |
+| 設定改了沒生效 | session 已啟動 | 重開 chat |
+| 子代理一直要核准 | 子代理不繼承父信任 | 在子代理 agent 設 `allowedTools`,或父 agent 設 crew 信任 |
+| MCP 工具沒出現 | 伺服器沒啟動成功 | `kiro-cli mcp status` 檢查 |
+
+## 看 log
+
+對話的 log 放在這(macOS):
+
+```bash
+cat "$TMPDIR/kiro-log/kiro-chat.log"
+```
+
+想自己指定 log 檔、或把顏色關掉:
+
+```bash
+KIRO_CHAT_LOG_FILE=/tmp/my-debug.log kiro-cli chat
+KIRO_LOG_NO_COLOR=1 kiro-cli chat
+```
+
+## 提高訊息詳細度
+
+```bash
+kiro-cli chat -v        # 可重複:-vv、-vvv 更詳細
+```
+
+## 進階除錯
+
+```bash
+kiro-cli debug          # 開發/進階除錯指令
+```
+
+## 回報問題
+
+```bash
+kiro-cli issue
+```
+
+<Callout type="tip">
+排查順序記起來:`doctor` → 看 log → `diagnostic` 收資料 → 真的還不行才 `issue`。八成的問題前兩步就解掉了。
+</Callout>
+
+<Callout type="warn">
+log 和 diagnostic 裡可能夾著路徑、環境變數這些東西。貼到公開 issue 之前,先看一眼有沒有帶到 token 或私密路徑。
+</Callout>
+
+最後一章,給你一張隨手查的指令速查表。

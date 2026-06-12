@@ -1,0 +1,84 @@
+---
+title: 安裝與更新
+description: 確認裝好了沒、把版本保持最新,還有用 doctor / diagnostic 排查環境問題。
+section: 開始
+order: 110
+---
+import Callout from '../../components/Callout.astro';
+
+裝好之後別急著用。先確認 CLI 正常、版本夠新,再開始。
+
+## 確認安裝
+
+```bash
+kiro-cli --version
+```
+
+看到版本號(像是 `kiro-cli 2.6.1`)就代表裝好了。
+
+## 更新到最新版
+
+保持最新版,新功能跟安全修補才拿得到:
+
+```bash
+# 互動式更新(會問你確認)
+kiro-cli update
+
+# 不問直接更新(適合腳本)
+kiro-cli update --non-interactive
+```
+
+## 健檢:doctor
+
+`doctor` 會幫你診斷常見問題,能修的還會順手修掉:
+
+```bash
+# 診斷並嘗試修復
+kiro-cli doctor
+
+# 只診斷、不動手修(列出所有檢查)
+kiro-cli doctor --all
+
+# 嚴格模式:連警告都視為錯誤
+kiro-cli doctor --strict
+```
+
+<Callout type="tip">
+裝完之後覺得怪怪的、指令找不到、整合失效?第一件事就是跑 `kiro-cli doctor`。
+</Callout>
+
+## 收集診斷資訊:diagnostic
+
+要回報問題、或想深入查的時候,`diagnostic` 會把你的環境細節全部倒出來:
+
+```bash
+# 人類可讀
+kiro-cli diagnostic
+
+# 機器可讀(貼到 issue 很方便)
+kiro-cli diagnostic --format json-pretty
+```
+
+## 系統整合
+
+`integrations` 管的是 Kiro 跟你系統之間的整合(像是 shell、Terminal 外掛):
+
+```bash
+kiro-cli integrations status      # 看目前整合狀態
+kiro-cli integrations install     # 安裝整合
+kiro-cli integrations reinstall   # 重裝(整合壞掉時)
+```
+
+## 回報問題
+
+踩到 bug,直接開一個 GitHub issue:
+
+```bash
+kiro-cli issue
+```
+
+<Callout type="warn">
+`update` 會把你機器上的 Kiro 應用程式換掉。如果是在受管控的環境(像公司電腦)要更新,先確認你有權限,需要的話用 `--non-interactive` 接上你們的部署流程。
+</Callout>
+
+環境弄好了,下一章來處理登入跟帳號。

@@ -1,0 +1,79 @@
+---
+title: Session 管理與續接
+description: 列出、續接、刪除對話,還有 save / load 怎麼用。對話又是怎麼依資料夾隔離的。
+section: 對話
+order: 220
+---
+import Callout from '../../components/Callout.astro';
+
+對話會自動存下來,讓你隔天能接著做。記住一個重點:**對話是依資料夾隔離的**。
+
+## 列出這個資料夾的對話
+
+```bash
+kiro-cli chat --list-sessions
+# 簡寫
+kiro-cli chat -l
+```
+
+輸出大概長這樣:
+
+```text
+Chat sessions for /path/to/project:
+  Chat SessionId: f2946a26-...  2 hours ago | Implement auth | 15 msgs
+  Chat SessionId: 7bd2c90f-...  1 day ago    | Refactor db    | 23 msgs
+```
+
+## 續接對話
+
+```bash
+# 接續這個資料夾最近一次對話(會還原當時的模型)
+kiro-cli chat --resume
+kiro-cli chat -r
+
+# 用 session ID 接續特定一次
+kiro-cli chat --resume-id f2946a26-3735-4b08-8d05-c928010302d5
+
+# 開互動選單挑一個來接
+kiro-cli chat --resume-picker
+```
+
+<Callout type="tip">
+`--resume` 會把那個 session 存檔當下用的模型一起還原回來。想換掉,就同時加上 `--model`。
+</Callout>
+
+## 對話中存檔 / 載入
+
+```text
+/chat save 我的功能開發
+/chat load 我的功能開發
+```
+
+## 刪除對話
+
+```bash
+kiro-cli chat --delete-session f2946a26-3735-4b08-8d05-c928010302d5
+# 簡寫
+kiro-cli chat -d <SESSION_ID>
+```
+
+## 依資料夾隔離,到底有什麼用
+
+因為每段對話都綁在「當前的目錄路徑」上,所以你可以:
+
+- 同時開好幾個 Terminal,各自 `cd` 到不同專案跑 `kiro-cli chat`,彼此不干擾
+- 在每個專案底下 `--resume`,只會抓到那個專案的歷史
+
+```bash
+# Terminal A
+cd ~/proj/shop && kiro-cli chat
+
+# Terminal B(完全獨立)
+cd ~/proj/blog && kiro-cli chat
+```
+
+<Callout type="warn">
+`--resume` 找不到對話,多半是因為你不在當初那個資料夾。對話是 per-directory 的,換了目錄就看不到了。
+</Callout>
+
+對話的基礎就到這。接下來是最重要的一章:工具與信任。

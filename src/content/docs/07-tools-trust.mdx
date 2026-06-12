@@ -1,0 +1,129 @@
+---
+title: 工具與信任機制
+description: 工具核准怎麼運作、session/agent/flag 三層信任,還有路徑與指令層級的細緻控制。
+section: 工具與信任
+order: 300
+---
+import Callout from '../../components/Callout.astro';
+
+Kiro 要動你的系統之前,都會先問過你。**信任設定**就是讓你決定哪些動作可以免問,在「自動」跟「可控」之間抓個平衡。
+
+## 工具是什麼
+
+工具就是 Kiro 能做的動作,像 `read`(讀檔)、`write`(寫檔)、`shell`(執行指令)、`grep`、`glob`、`use_aws` 這些。讀的動作風險低;寫檔、執行指令風險高,所以預設都會先問過你。
+
+想在對話中看目前有哪些工具、信任狀態如何:
+
+```text
+/tools
+```
+
+## 三層信任
+
+信任可以設在三個層級:
+
+1. **Session** — 只在這次對話有效
+2. **Agent** — 寫在 agent 設定裡,永久生效
+3. **CLI flag** — 啟動的時候指定
+
+### Session 層(臨時)
+
+```text
+/tools trust write          # 信任 write
+/tools trust shell grep     # 一次信任多個
+/tools trust-all            # 信任全部
+/tools reset                # 還原成 agent 預設
+```
+
+### CLI flag 層(啟動時)
+
+```bash
+# 信任全部工具(連任意 shell 都放行,謹慎用)
+kiro-cli chat --trust-all-tools
+
+# 只信任指定工具
+kiro-cli chat --trust-tools=read,write,grep
+
+# 不信任任何工具(每個動作都問)
+kiro-cli chat --trust-tools=
+```
+
+### Agent 層(永久)
+
+在 agent 設定的 `allowedTools` 裡,把要免核准的工具列出來(下一章會細講):
+
+```json
+{
+  "allowedTools": ["read", "grep", "glob", "code"]
+}
+```
+
+也支援萬用字元:`fs_*`、`@git/*`、`@server/read_*`。
+
+## 細緻控制:toolsSettings
+
+比起「整個工具都信任」,更安全的做法是限定**範圍**。
+
+### 限定可寫入的路徑
+
+```json
+{
+  "toolsSettings": {
+    "write": {
+      "allowedPaths": ["./src/**", "./tests/**"],
+      "deniedPaths": ["./.env", "./secrets/**"]
+    }
+  }
+}
+```
+
+`deniedPaths` 永遠比 `allowedPaths` 優先。
+
+### 限定可執行的指令
+
+```json
+{
+  "toolsSettings": {
+    "shell": {
+      "allowedCommands": ["^git ", "^npm (test|run build)$"],
+      "deniedCommands": ["rm -rf .*", "sudo .*"],
+      "autoAllowReadonly": true
+    }
+  }
+}
+```
+
+- `allowedCommands` / `deniedCommands` 用的是 regex
+- `autoAllowReadonly` 會自動放行唯讀的指令(`ls`、`cat`、`git status`…)
+
+### 限定可存取的網址(web_fetch)
+
+```json
+{
+  "toolsSettings": {
+    "web_fetch": {
+      "trusted": [".*docs\\.aws\\.amazon\\.com.*"],
+      "blocked": [".*pastebin\\.com.*"]
+    }
+  }
+}
+```
+
+`blocked` 會先檢查,比 `trusted` 優先。
+
+## 信任優先順序
+
+好幾條規則同時存在時,由高到低是這樣:
+
+1. `deniedPaths` / `deniedCommands` — 永遠擋
+2. `/tools trust-all` — session 全部信任
+3. `/tools trust <tool>` — session 單一信任
+4. agent 的 `allowedTools` — 永久信任
+5. `toolsSettings` 的路徑/指令規則 — 條件信任
+6. 預設 — 要核准
+
+<Callout type="danger">
+`--trust-all-tools` 會放行**任何 shell 指令**,連 `rm`、`sudo` 都放。沒人在旁邊看著、或在重要資料夾裡跑,建議改用 `allowedTools` 加 `toolsSettings` 把範圍收緊,比直接全信任安全多了。
+</Callout>
+
+信任搞懂了,下一章我們把它組成三種好用的「自動化模式」。

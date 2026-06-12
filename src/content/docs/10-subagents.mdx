@@ -1,0 +1,94 @@
+---
+title: Subagent 平行工作流
+description: 用 subagent(crew)把任務拆成能平行跑的 pipeline,認識 role,並讓 subagent 免核准。
+section: 進階自動化
+order: 500
+---
+import Callout from '../../components/Callout.astro';
+
+當一個任務可以拆成好幾條互不相干的支線,subagent(也叫 crew)就能讓多個 agent **同時平行**跑,最後再把結果彙整回來。
+
+## 怎麼觸發
+
+你不用自己手動去呼叫工具。直接用自然語言講出「我要平行做」這件事就好:
+
+```text
+❯ 平行分析 auth、payment、search 三個模組的安全性,最後彙整成一份報告
+❯ 同時幫 src/ 底下這四個檔各自補上單元測試
+```
+
+Kiro 會自動幫你組成一個 pipeline。沒有相依關係的階段就一起開跑,有相依的就乖乖等前面做完。每個階段都是一個獨立 session,在 TUI 裡按 `Ctrl+G` 就能盯進度。
+
+## pipeline 的形狀
+
+一個 stage 由這幾個東西組成:
+
+- `name`:階段名稱,不能重複
+- `role`:**這個階段要套哪個 agent 設定**
+- `prompt_template`:這個階段要做的事(`{task}` 代表整體任務)
+- `depends_on`:要等哪些階段做完才開始
+
+### 平行(fan-out)
+
+```text
+research-jest   ─┐
+research-vitest ─┤  (三條同時跑,互不相依)
+research-mocha  ─┘
+```
+
+### 相依 pipeline
+
+```text
+research ──▶ implement ──▶ review
+(完成才換下一棒)
+```
+
+### 扇出再匯流(fan-in)
+
+```text
+security-scan ─┐
+               ├─▶ report (兩條都完成才開始彙整)
+perf-analysis ─┘
+```
+
+## role 是什麼
+
+`role` 講白了就是「這個子任務要交給哪個 agent 設定來做」。它的值要對得上一個真的存在的 agent 名稱(放在 `~/.kiro/agents/`,或專案裡的 `.kiro/agents/`)。
+
+<Callout type="warn">
+**subagent 不會繼承父 agent 的工具信任**。每個 subagent 是看它 `role` 對應到的那個 agent,用人家自己的 `allowedTools`。所以如果某個 role 指到的 agent 根本沒設 `allowedTools`,它一跑到 write/shell 還是會跳出來要你核准,平行或無人值守的時候就可能卡在這。
+</Callout>
+
+## 讓 subagent 免核准
+
+有兩個做法:
+
+**1. 在父 agent 裡設定 crew,直接信任 spawn 這個動作**
+
+```json
+{
+  "toolsSettings": {
+    "crew": {
+      "availableAgents": ["*"],
+      "trustedAgents": ["*"]
+    }
+  }
+}
+```
+
+- `availableAgents`:哪些 agent 可以拿來當 role(支援萬用字元;留空就是全部)
+- `trustedAgents`:哪些 agent 的 spawn 不用再確認
+
+**2. 讓 subagent 的 role 指到一個 `allowedTools` 設好設滿的 agent**(像你的 `default`),它就會直接套用那一整套信任。
+
+<Callout type="tip">
+最省事的組合是這樣:父 agent 設 `crew.trustedAgents: ["*"]`,然後讓所有 stage 都用 `default` 當 role。這樣每個 subagent 都會自動沿用 default 的 `allowedTools` 跟 shell 白名單,信任程度跟主 agent 一樣,平行跑起來也不會卡在核准。沒什麼特別需求的話,一個通用的 `default` 就夠用了。
+</Callout>
+
+## 幾個限制
+
+- subagent **不能**再去開 subagent(免得無限遞迴下去)
+- subagent 有預設的回合上限,避免它失控暴衝
+- subagent 的 session 一做完就結束,**之後沒辦法再續接**;結果會回報給父 agent
+
+下一章,來看怎麼用知識庫餵給 Kiro 一大堆資料。

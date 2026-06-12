@@ -1,0 +1,102 @@
+---
+title: 實戰 Cookbook
+description: 把前面的功能串成真實場景:修 bug、補測試、重構、多專案平行、CI 自動化。
+section: 實戰 Cookbook
+order: 700
+---
+import Callout from '../../components/Callout.astro';
+
+把前面學到的東西組合起來,對應你工作上真的會碰到的情境。
+
+## 場景一:讀懂一個陌生專案
+
+```bash
+cd ~/some-repo
+kiro-cli chat
+```
+
+```text
+❯ 我剛接手這個專案。幫我:1) 說明它的用途與架構 2) 列出主要進入點 3) 指出我該先讀哪幾個檔
+```
+
+## 場景二:修 bug 並驗證
+
+```text
+❯ 執行測試,挑出失敗的那幾個,找出根因並修好,修完再跑一次確認綠燈
+```
+
+<Callout type="tip">
+讓 Kiro「修完再跑一次」這點很關鍵——這樣它會自己驗證結果,而不是改完就交差。
+</Callout>
+
+## 場景三:補測試
+
+```text
+❯ src/services/ 底下哪些檔沒有測試?幫沒覆蓋到的補上單元測試並執行
+```
+
+## 場景四:安全的重構
+
+先切到模式二(寫檔免核准、shell 走白名單):
+
+```bash
+kiro-cli chat --trust-tools=read,write,grep,glob,code
+```
+
+```text
+❯ 把 callback 風格的非同步程式改寫成 async/await,保持行為不變,改完跑測試
+```
+
+## 場景五:一次跑多個專案(燒整批任務)
+
+```bash
+#!/usr/bin/env bash
+projects=(~/proj/a ~/proj/b ~/proj/c)
+for p in "${projects[@]}"; do
+  ( cd "$p" && kiro-cli chat --trust-all-tools --no-interactive \
+      "更新依賴、修掉警告、跑測試,最後輸出一份變更摘要" \
+      > kiro-run.log 2>&1 ) &
+done
+wait
+echo "全部完成 ✓"
+```
+
+每個專案各自在背景跑,log 分開存,對話也照目錄各自隔離。
+
+## 場景六:平行分析再彙整
+
+```text
+❯ 平行分析 auth、payment、search 三個模組的安全風險,完成後彙整成一份報告
+```
+
+Kiro 會開 subagent 把三條分析同時跑,再 fan-in 收成一份報告。記得父 agent 要先設好 `crew` 信任(細節看 Subagent 那章)。
+
+## 場景七:CI 裡的 headless 自動化
+
+在 CI 的 step 裡:
+
+```bash
+kiro-cli chat --no-interactive --trust-tools=read,grep,shell \
+  "跑 lint 與測試,如果有失敗就總結原因並以非零碼結束"
+```
+
+<Callout type="warn">
+在 CI 裡盡量用 `--trust-tools` 精準授權,別直接開 `--trust-all-tools`。把能跑的指令範圍縮到剛好夠用就好,風險才壓得下來。
+</Callout>
+
+## 場景八:邊做邊存進度
+
+```text
+❯ /chat save 重構-訂單模組
+```
+
+隔天回來接著做:
+
+```bash
+kiro-cli chat --resume
+# 或
+kiro-cli chat
+/chat load 重構-訂單模組
+```
+
+下一章來看:出事的時候怎麼查。

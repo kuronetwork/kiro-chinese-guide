@@ -1,0 +1,94 @@
+---
+title: 模型與推理強度
+description: 切換模型、設定預設模型、調整推理 effort,還有怎麼把這些偏好存起來。
+section: 對話
+order: 210
+---
+import Callout from '../../components/Callout.astro';
+
+不同的任務,適合不同的模型跟「思考深度」。這章就帶你選對模型、設成預設。
+
+## 先看看有哪些模型
+
+```bash
+# 在對話中開互動選單
+/model
+
+# 或從命令列列出
+kiro-cli chat --list-models
+kiro-cli chat --list-models --format json-pretty
+```
+
+## 切換模型
+
+```bash
+# 對話中直接切(支援部分比對、不分大小寫)
+/model claude-sonnet-4
+
+# 啟動時指定
+kiro-cli chat --model claude-opus-4.8 "解釋這個 codebase"
+```
+
+## 設成預設模型
+
+想讓每個新的 session 都用同一個模型,這樣設:
+
+```bash
+kiro-cli settings chat.defaultModel claude-opus-4.8
+```
+
+也可以把現在這個 session 用的模型,直接存成預設:
+
+```text
+/model set-current-as-default
+```
+
+模型怎麼挑,優先順序是這樣(高到低):
+
+1. `--model` flag
+2. `--resume` 還原回來的 session 模型
+3. `chat.defaultModel` 設定
+4. 系統預設
+
+## 推理強度 effort
+
+`effort` 控制模型要「想多深」。調越高,它想得越仔細,但也越慢、越吃用量:
+
+| 等級 | 說明 |
+| --- | --- |
+| `low` | 最快、最省 |
+| `medium` | 平衡 |
+| `high` | 仔細 |
+| `xhigh` | 延伸推理 |
+| `max` | 最高(僅部分 Claude 模型支援) |
+
+```bash
+# 對話中調整
+/effort high
+
+# 啟動時指定
+kiro-cli chat --effort max "幫我做這個 PR 的安全審查"
+```
+
+<Callout type="tip">
+快速問答用 `low` 就好;複雜的重構或設計,開 `high` 或 `max`。不是每個模型都支援 effort,要是你選的模型不支援,`/effort` 會提醒你換一個支援的。
+</Callout>
+
+## 幫每個模型記住預設 effort
+
+在 `~/.kiro/settings/cli.json` 裡用 `chat.modelDefaults`,就能針對某個模型設它的預設 effort。Claude 系列要寫在 `output_config.effort`:
+
+```json
+{
+  "chat.defaultModel": "claude-opus-4.8",
+  "chat.modelDefaults": {
+    "claude-opus-4.8": { "output_config": { "effort": "max" } }
+  }
+}
+```
+
+這樣每開一個新 session 就自動套用,不用每次再打 flag。
+
+effort 的優先順序(高到低):`--effort` flag → 載入進來的 session → `cli.json` 預設 → 模型內建的預設。
+
+下一章,我們把對話存起來,之後接著用。
