@@ -6,7 +6,7 @@ import sitemap from '@astrojs/sitemap';
 // ⚠️ 換成你的 Cloudflare 自訂網域(含 https://,結尾不要斜線)
 //    例如:'https://kiro.yourdomain.com'
 //    這個值會被 sitemap 與 <link rel="canonical"> 使用。
-const SITE = 'https://kiro-guide.example.com';
+const SITE = 'https://kiro.kuronetwork.me';
 
 // https://astro.build/config
 export default defineConfig({
