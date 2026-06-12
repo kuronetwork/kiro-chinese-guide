@@ -42,5 +42,43 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         a.addEventListener('click', () => document.body.classList.remove('nav-open'))
       );
     </script>
+    <script>
+      // 為每個程式碼區塊加上「複製」按鈕(只鎖定 Shiki 產出的 pre.astro-code)
+      document.addEventListener('DOMContentLoaded', () => {
+        const blocks = document.querySelectorAll('.content pre.astro-code');
+        blocks.forEach((pre) => {
+          const wrap = document.createElement('div');
+          wrap.className = 'code-wrap';
+          pre.parentNode?.insertBefore(wrap, pre);
+          wrap.appendChild(pre);
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'copy-btn';
+          btn.textContent = '複製';
+          btn.setAttribute('aria-label', '複製程式碼');
+          wrap.appendChild(btn);
+
+          btn.addEventListener('click', async () => {
+            const code = (pre.textContent ?? '').replace(/\n+$/, '');
+            try {
+              await navigator.clipboard.writeText(code);
+            } catch {
+              const ta = document.createElement('textarea');
+              ta.value = code;
+              ta.style.position = 'fixed';
+              ta.style.opacity = '0';
+              document.body.appendChild(ta);
+              ta.select();
+              try { document.execCommand('copy'); } catch {}
+              document.body.removeChild(ta);
+            }
+            btn.textContent = '已複製';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = '複製'; btn.classList.remove('copied'); }, 1500);
+          });
+        });
+      });
+    </script>
   </body>
 </html>
