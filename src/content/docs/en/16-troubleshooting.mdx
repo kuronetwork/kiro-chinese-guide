@@ -1,0 +1,82 @@
+---
+title: Troubleshooting
+description: "Common problems and the commands that go with them: doctor, diagnostic, debug, log locations, and environment variables."
+section: Troubleshooting
+order: 800
+---
+import Callout from '../../../components/Callout.astro';
+
+When something goes wrong, here's the order to investigate in and which tools to use.
+
+## Step one: doctor
+
+For most environment problems, running this first is the right move:
+
+```bash
+kiro-cli doctor          # diagnose and try to fix
+kiro-cli doctor --all    # only diagnose, list all checks
+```
+
+## Collecting environment info
+
+```bash
+kiro-cli diagnostic --format json-pretty
+```
+
+When you're about to open an issue, pasting this info in is really helpful.
+
+## Common problems at a glance
+
+| Symptom | Possible cause | What to do |
+| --- | --- | --- |
+| Headless hangs and won't move | A tool needs approval but no one's there to press it | Add `--trust-all-tools` or `--trust-tools=...` |
+| `--resume` can't find the conversation | You're not in the original folder | Conversations are per-directory; go back to the original directory |
+| Model unavailable | The model isn't in this region or has been retired | Re-pick with `/model`, or drop `--model` to use the default |
+| Agent not found | Wrong agent name or the file doesn't exist | Confirm with `kiro-cli agent list` |
+| Tool still asks after adding `allowedTools` | Tool name misspelled | Check the correct name with `/tools`; MCP needs `@server/tool` |
+| Settings change didn't take effect | The session already started | Reopen chat |
+| Subagent keeps asking for approval | Subagents don't inherit parent trust | Set `allowedTools` on the subagent's agent, or set crew trust on the parent agent |
+| MCP tools don't show up | The server didn't start successfully | Check with `kiro-cli mcp status` |
+
+## Reading logs
+
+The conversation log lives here (macOS):
+
+```bash
+cat "$TMPDIR/kiro-log/kiro-chat.log"
+```
+
+Want to specify your own log file, or turn off colors:
+
+```bash
+KIRO_CHAT_LOG_FILE=/tmp/my-debug.log kiro-cli chat
+KIRO_LOG_NO_COLOR=1 kiro-cli chat
+```
+
+## Turning up the verbosity
+
+```bash
+kiro-cli chat -v        # repeatable: -vv, -vvv for more detail
+```
+
+## Advanced debugging
+
+```bash
+kiro-cli debug          # development / advanced debugging commands
+```
+
+## Reporting a problem
+
+```bash
+kiro-cli issue
+```
+
+<Callout type="tip">
+Memorize the investigation order: `doctor` → read the log → `diagnostic` to gather data → only resort to `issue` if it really still won't work. Eight out of ten problems get solved in the first two steps.
+</Callout>
+
+<Callout type="warn">
+Logs and diagnostics can have paths, environment variables, and the like tucked inside them. Before pasting them into a public issue, take a quick look to make sure you're not carrying a token or a private path along with it.
+</Callout>
+
+For the final chapter, here's a cheat sheet you can glance at on the fly.

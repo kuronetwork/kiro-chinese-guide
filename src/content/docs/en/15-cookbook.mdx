@@ -1,0 +1,102 @@
+---
+title: Cookbook
+description: "String the earlier features into real scenarios: fixing bugs, adding tests, refactoring, parallel multi-project work, and CI automation."
+section: Cookbook
+order: 700
+---
+import Callout from '../../../components/Callout.astro';
+
+Let's combine what you've learned so far into the situations you'll actually run into at work.
+
+## Scenario 1: getting your head around an unfamiliar project
+
+```bash
+cd ~/some-repo
+kiro-cli chat
+```
+
+```text
+❯ I just inherited this project. Help me: 1) explain what it's for and its architecture 2) list the main entry points 3) point out which files I should read first
+```
+
+## Scenario 2: fix a bug and verify
+
+```text
+❯ Run the tests, pick out the failing ones, find the root cause and fix it, then run them again to confirm everything's green
+```
+
+<Callout type="tip">
+Having Kiro "run them again after fixing" is the key part — that way it verifies the result itself instead of just calling it done after making the change.
+</Callout>
+
+## Scenario 3: add tests
+
+```text
+❯ Which files under src/services/ have no tests? Add unit tests for the uncovered ones and run them
+```
+
+## Scenario 4: a safe refactor
+
+First switch to mode two (writing files without approval, shell goes through an allowlist):
+
+```bash
+kiro-cli chat --trust-tools=read,write,grep,glob,code
+```
+
+```text
+❯ Rewrite the callback-style async code into async/await, keep the behavior unchanged, and run the tests when done
+```
+
+## Scenario 5: run multiple projects at once (batch a whole pile of tasks)
+
+```bash
+#!/usr/bin/env bash
+projects=(~/proj/a ~/proj/b ~/proj/c)
+for p in "${projects[@]}"; do
+  ( cd "$p" && kiro-cli chat --trust-all-tools --no-interactive \
+      "Update dependencies, fix warnings, run the tests, and finish with a summary of the changes" \
+      > kiro-run.log 2>&1 ) &
+done
+wait
+echo "All done ✓"
+```
+
+Each project runs in the background on its own, logs are stored separately, and the conversations are isolated per directory too.
+
+## Scenario 6: parallel analysis, then consolidate
+
+```text
+❯ Analyze the security risks of the auth, payment, and search modules in parallel, and consolidate the results into one report when done
+```
+
+Kiro will spin up subagents to run the three analyses simultaneously, then fan-in into a single report. Remember the parent agent needs `crew` trust set up first (see the Subagent chapter for details).
+
+## Scenario 7: headless automation in CI
+
+Inside a CI step:
+
+```bash
+kiro-cli chat --no-interactive --trust-tools=read,grep,shell \
+  "Run lint and tests; if anything fails, summarize why and exit with a non-zero code"
+```
+
+<Callout type="warn">
+In CI, try to grant precise permissions with `--trust-tools` rather than just flipping on `--trust-all-tools`. Narrow the range of commands that can run down to just enough — that's how you keep the risk under control.
+</Callout>
+
+## Scenario 8: save your progress as you go
+
+```text
+❯ /chat save refactor-orders-module
+```
+
+Come back the next day and pick up where you left off:
+
+```bash
+kiro-cli chat --resume
+# or
+kiro-cli chat
+/chat load refactor-orders-module
+```
+
+Next chapter: how to investigate when things go wrong.

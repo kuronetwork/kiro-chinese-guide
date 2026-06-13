@@ -1,0 +1,129 @@
+---
+title: Tools & the Trust Mechanism
+description: How tool approval works, the three layers of trust (session/agent/flag), plus fine-grained control at the path and command level.
+section: Tools & Trust
+order: 300
+---
+import Callout from '../../../components/Callout.astro';
+
+Before Kiro touches your system, it always asks you first. **Trust settings** let you decide which actions can skip the prompt, striking a balance between "automatic" and "in control."
+
+## What's a tool
+
+A tool is an action Kiro can take, like `read` (read files), `write` (write files), `shell` (run commands), `grep`, `glob`, `use_aws`, and so on. Read actions are low-risk; writing files and running commands are high-risk, so by default they ask you first.
+
+To see which tools are available and their trust status inside a conversation:
+
+```text
+/tools
+```
+
+## The three layers of trust
+
+Trust can be set at three levels:
+
+1. **Session** — only valid for this conversation
+2. **Agent** — written in the agent config, permanent
+3. **CLI flag** — specified at launch
+
+### Session layer (temporary)
+
+```text
+/tools trust write          # Trust write
+/tools trust shell grep     # Trust several at once
+/tools trust-all            # Trust everything
+/tools reset                # Reset back to the agent defaults
+```
+
+### CLI flag layer (at launch)
+
+```bash
+# Trust all tools (even arbitrary shell is allowed — use with caution)
+kiro-cli chat --trust-all-tools
+
+# Trust only specific tools
+kiro-cli chat --trust-tools=read,write,grep
+
+# Trust no tools (asks for every action)
+kiro-cli chat --trust-tools=
+```
+
+### Agent layer (permanent)
+
+In the agent config's `allowedTools`, list the tools that skip approval (we'll cover this in detail in the next chapter):
+
+```json
+{
+  "allowedTools": ["read", "grep", "glob", "code"]
+}
+```
+
+Wildcards are supported too: `fs_*`, `@git/*`, `@server/read_*`.
+
+## Fine-grained control: toolsSettings
+
+Rather than "trust the whole tool," a safer approach is to limit the **scope**.
+
+### Limit the writable paths
+
+```json
+{
+  "toolsSettings": {
+    "write": {
+      "allowedPaths": ["./src/**", "./tests/**"],
+      "deniedPaths": ["./.env", "./secrets/**"]
+    }
+  }
+}
+```
+
+`deniedPaths` always takes priority over `allowedPaths`.
+
+### Limit the runnable commands
+
+```json
+{
+  "toolsSettings": {
+    "shell": {
+      "allowedCommands": ["^git ", "^npm (test|run build)$"],
+      "deniedCommands": ["rm -rf .*", "sudo .*"],
+      "autoAllowReadonly": true
+    }
+  }
+}
+```
+
+- `allowedCommands` / `deniedCommands` use regex
+- `autoAllowReadonly` automatically allows read-only commands (`ls`, `cat`, `git status`, …)
+
+### Limit the accessible URLs (web_fetch)
+
+```json
+{
+  "toolsSettings": {
+    "web_fetch": {
+      "trusted": [".*docs\\.aws\\.amazon\\.com.*"],
+      "blocked": [".*pastebin\\.com.*"]
+    }
+  }
+}
+```
+
+`blocked` is checked first, taking priority over `trusted`.
+
+## Trust priority order
+
+When several rules apply at once, here's the order from highest to lowest:
+
+1. `deniedPaths` / `deniedCommands` — always blocked
+2. `/tools trust-all` — session-wide trust everything
+3. `/tools trust <tool>` — session single-tool trust
+4. The agent's `allowedTools` — permanent trust
+5. `toolsSettings` path/command rules — conditional trust
+6. Default — requires approval
+
+<Callout type="danger">
+`--trust-all-tools` allows **any shell command**, even `rm` and `sudo`. If no one's watching, or you're running it in an important folder, you're better off tightening the scope with `allowedTools` plus `toolsSettings` — far safer than trusting everything outright.
+</Callout>
+
+Now that trust makes sense, in the next chapter we'll assemble it into three handy "automation modes."

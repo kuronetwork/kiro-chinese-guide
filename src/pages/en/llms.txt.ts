@@ -1,12 +1,12 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
-import { localeOf } from '../i18n/ui';
+import { localeOf } from '../../i18n/ui';
 
 const SITE = 'https://kiro.kuronetwork.me';
 
 export const GET: APIRoute = async () => {
   const docs = (await getCollection('docs'))
-    .filter((d) => localeOf(d.id) === 'zh-Hant')
+    .filter((d) => localeOf(d.id) === 'en')
     .sort((a, b) => a.data.order - b.data.order);
 
   const groups: { label: string; items: typeof docs }[] = [];
@@ -16,10 +16,10 @@ export const GET: APIRoute = async () => {
     g.items.push(d);
   }
 
-  let out = '# Kiro CLI 繁體中文教學\n\n';
-  out += '> 用台灣繁體中文整理的 Amazon Kiro CLI 教學,從第一次對話一路到多專案自動化,每段都附可直接複製的範例。對應 Kiro CLI 2.6.1。\n\n';
-  out += '本站為非官方社群教學,內容經整理並翻譯為中文輔助學習,請以官方文件(https://kiro.dev/docs/cli/)與 `kiro-cli --help` 為準。\n\n';
-  out += '英文版 / English: ' + SITE + '/en/llms.txt\n\n';
+  let out = '# Kiro CLI Guide (English)\n\n';
+  out += '> A community-curated tutorial for Amazon Kiro CLI, from your first chat all the way to multi-project automation. Every section includes copy-paste-ready examples. For Kiro CLI 2.6.1.\n\n';
+  out += 'Unofficial community tutorial for learning purposes — always defer to the official docs (https://kiro.dev/docs/cli/) and `kiro-cli --help`.\n\n';
+  out += 'Chinese / 繁體中文: ' + SITE + '/llms.txt\n\n';
 
   for (const g of groups) {
     out += `## ${g.label}\n`;

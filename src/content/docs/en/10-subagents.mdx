@@ -1,0 +1,94 @@
+---
+title: Subagent Parallel Workflows
+description: Use subagents (crews) to break a task into a pipeline that runs in parallel, understand roles, and let subagents skip approval.
+section: Advanced Automation
+order: 500
+---
+import Callout from '../../../components/Callout.astro';
+
+When a task can be split into several independent branches, subagents (also called a crew) let multiple agents run **in parallel at the same time**, then merge the results back together at the end.
+
+## How to trigger it
+
+You don't have to call the tool manually yourself. Just say "I want to do this in parallel" in natural language:
+
+```text
+❯ In parallel, analyze the security of the auth, payment, and search modules, then merge it into a single report
+❯ At the same time, add unit tests to each of these four files under src/
+```
+
+Kiro will automatically assemble a pipeline for you. Stages with no dependencies kick off together; ones with dependencies wait patiently for the earlier work to finish. Each stage is an independent session, and you can watch the progress by pressing `Ctrl+G` in the TUI.
+
+## The shape of a pipeline
+
+A stage is made up of these pieces:
+
+- `name`: the stage name, can't be duplicated
+- `role`: **which agent config this stage uses**
+- `prompt_template`: what this stage does (`{task}` stands for the overall task)
+- `depends_on`: which stages must finish before this one starts
+
+### Parallel (fan-out)
+
+```text
+research-jest   ─┐
+research-vitest ─┤  (three run at once, independent of each other)
+research-mocha  ─┘
+```
+
+### Dependent pipeline
+
+```text
+research ──▶ implement ──▶ review
+(finish before handing off to the next)
+```
+
+### Fan-out then fan-in
+
+```text
+security-scan ─┐
+               ├─▶ report (merging starts only after both finish)
+perf-analysis ─┘
+```
+
+## What a role is
+
+Put plainly, a `role` is "which agent config this subtask gets handed to." Its value has to match the name of an agent that actually exists (placed in `~/.kiro/agents/`, or in the project's `.kiro/agents/`).
+
+<Callout type="warn">
+**A subagent does not inherit the parent agent's tool trust**. Each subagent looks at the agent its `role` maps to and uses that agent's own `allowedTools`. So if a role points to an agent that has no `allowedTools` set at all, it'll still pop up asking for your approval the moment it hits write/shell — which can get stuck when running in parallel or unattended.
+</Callout>
+
+## Letting subagents skip approval
+
+There are two ways to do this:
+
+**1. Configure crew in the parent agent to trust the spawn action directly**
+
+```json
+{
+  "toolsSettings": {
+    "crew": {
+      "availableAgents": ["*"],
+      "trustedAgents": ["*"]
+    }
+  }
+}
+```
+
+- `availableAgents`: which agents can be used as a role (supports wildcards; leave it empty for all)
+- `trustedAgents`: which agents' spawn doesn't need to be confirmed again
+
+**2. Point the subagent's role at an agent with `allowedTools` fully set up** (like your `default`), and it'll apply that whole set of trust directly.
+
+<Callout type="tip">
+The easiest combo is this: set `crew.trustedAgents: ["*"]` on the parent agent, then have every stage use `default` as its role. That way each subagent automatically inherits default's `allowedTools` and shell allowlist, trusted to the same degree as the main agent, and parallel runs won't get stuck on approvals. If you don't have any special needs, one general-purpose `default` is enough.
+</Callout>
+
+## A few limitations
+
+- A subagent **can't** spawn another subagent (to avoid infinite recursion)
+- Subagents have a default turn limit, to keep them from running wild
+- A subagent's session ends as soon as it's done, and **can't be resumed afterward**; the result is reported back to the parent agent
+
+In the next chapter, let's look at how to feed Kiro a big pile of data using knowledge bases.

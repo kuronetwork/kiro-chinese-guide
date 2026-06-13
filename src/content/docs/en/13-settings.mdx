@@ -1,0 +1,89 @@
+---
+title: settings Overview
+description: Use the settings command to manage global and workspace settings, and walk through the most commonly used setting keys.
+section: Customization
+order: 600
+---
+import Callout from '../../../components/Callout.astro';
+
+`settings` is where you tweak how Kiro CLI behaves. Whatever you configure gets saved and sticks around across sessions.
+
+## Basic operations
+
+```bash
+kiro-cli settings <key> <value>     # set a value
+kiro-cli settings <key>             # read the current value
+kiro-cli settings --delete <key>    # delete it
+kiro-cli settings list              # list configured items
+kiro-cli settings list --all        # list all available settings (including unset ones)
+kiro-cli settings open              # open the settings file in your editor
+```
+
+## Global vs workspace
+
+```bash
+kiro-cli settings <key> <value> --global      # global (default)
+kiro-cli settings <key> <value> --workspace   # only for the current project
+```
+
+- Global: `~/.kiro/settings/cli.json`
+- Workspace: `.kiro/settings/cli.json`
+
+When the same key is set at different levels, who wins? The priority order is **Session > Workspace > Global** — the closer it is to you, the higher it ranks.
+
+## Value types
+
+- Boolean: `true` / `false`
+- String: just give it
+- Number: just give it
+- Array: JSON format, e.g. `'["a","b"]'`
+
+## The most useful setting keys
+
+```bash
+# default model and agent
+kiro-cli settings chat.defaultModel claude-opus-4.8
+kiro-cli settings chat.defaultAgent dev
+
+# turn on advanced features
+kiro-cli settings chat.enableSubagent true
+kiro-cli settings chat.enableKnowledge true
+kiro-cli settings chat.enableCodeIntelligence true
+kiro-cli settings chat.enableTodoList true
+kiro-cli settings chat.enableThinking true
+kiro-cli settings chat.enableNotifications true
+```
+
+| Setting | What it does |
+| --- | --- |
+| `chat.defaultModel` | Default model for new sessions |
+| `chat.defaultAgent` | Default agent for new sessions |
+| `chat.enableSubagent` | Enable subagent parallelism |
+| `chat.enableKnowledge` | Enable the knowledge base |
+| `chat.enableCodeIntelligence` | Enable code intelligence (LSP) |
+| `chat.enableTodoList` | Enable the task list |
+| `chat.enableThinking` | Enable thinking |
+| `chat.enableNotifications` | Desktop notification when done |
+| `chat.disableAutoCompaction` | Turn off auto-compaction (keeps full context, uses more) |
+| `telemetry.enabled` | Telemetry toggle |
+
+<Callout type="tip">
+Not sure which settings you can tweak? Run `kiro-cli settings list --all` — it lists every available key along with its description. If you want to get a feel for what's adjustable, this is the fastest place to start.
+</Callout>
+
+<Callout type="warn">
+`chat.disableAutoCompaction true` lets long conversations keep their full context, at the cost of using more. And once a conversation gets long enough, you can still hit the context limit. Just leave auto-compaction on (it's on by default anyway) — don't go turning it off.
+</Callout>
+
+## Example: set up your "fully automated dev" preferences in one go
+
+```bash
+kiro-cli settings chat.defaultModel claude-opus-4.8
+kiro-cli settings chat.enableSubagent true
+kiro-cli settings chat.enableTodoList true
+kiro-cli settings chat.enableCodeIntelligence true
+kiro-cli settings chat.enableKnowledge true
+kiro-cli settings chat.enableNotifications true
+```
+
+Next chapter: shell integration, themes, and turning plain English into commands.

@@ -10,7 +10,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "i18n:status": "node scripts/i18n-status.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "6.0.3",

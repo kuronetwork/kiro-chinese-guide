@@ -114,6 +114,41 @@ code, kbd, pre, .mono { font-family: var(--mono); }
 .topbar .title b { color: var(--fg-strong); font-weight: 700; }
 .topbar .spacer { flex: 1; }
 
+/* 語言切換器 */
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.lang-switch .lang-link,
+.lang-switch .lang-cur {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  padding: 4px 9px;
+  line-height: 1.4;
+}
+.lang-switch .lang-link {
+  color: var(--muted);
+  background: transparent;
+}
+.lang-switch .lang-link:hover {
+  color: var(--accent);
+  background: var(--panel);
+  text-decoration: none;
+}
+.lang-switch .lang-cur {
+  color: #06140f;
+  background: var(--accent);
+  font-weight: 700;
+}
+
 /* ---------- 側欄 ---------- */
 .sidebar {
   position: sticky;

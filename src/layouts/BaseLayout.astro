@@ -1,46 +1,87 @@
 ---
 import '../styles/global.css';
+import { t, HTML_LANG, OG_LOCALE, LOCALE_LABEL, LOCALES, DEFAULT_LOCALE, type Locale } from '../i18n/ui';
 
+interface Alternate { hreflang: string; href: string }
 interface Props {
   title: string;
   description?: string;
+  locale?: Locale;
+  /** 同一頁在「另一個語系」的網址(含 base);語言切換器用 */
+  switchHref?: string;
+  /** hreflang alternate 連結(href 含 base、相對站根) */
+  alternates?: Alternate[];
 }
-const { title, description = 'Kiro CLI 繁體中文教學 — 從零到自動化的完整學習路徑。' } = Astro.props;
+const {
+  title,
+  locale = DEFAULT_LOCALE,
+  description = t(locale, 'site.tagline'),
+  switchHref,
+  alternates = [],
+} = Astro.props;
+
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const ogImage = new URL('og.png', Astro.site).href;
+
+const homeHref = locale === 'en' ? `${base}/en/` : `${base}/`;
+const siteName = locale === 'en' ? 'Kiro CLI Guide' : 'Kiro CLI 繁中教學';
+
+// 語言切換器:目前語系標 active,另一語系連到 switchHref(沒給就退回該語系首頁)
+const switchTargets: { loc: Locale; href: string }[] = LOCALES.map((loc) => {
+  if (loc === locale) return { loc, href: homeHref };
+  const fallback = loc === 'en' ? `${base}/en/` : `${base}/`;
+  return { loc, href: switchHref ?? fallback };
+});
 ---
 <!doctype html>
-<html lang="zh-Hant">
+<html lang={HTML_LANG[locale]}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {alternates.map((a) => (
+      <link rel="alternate" hreflang={a.hreflang} href={new URL(a.href, Astro.site).href} />
+    ))}
     <meta name="theme-color" content="#0d1117" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    <meta property="og:site_name" content="Kiro CLI 繁中教學" />
-    <meta property="og:locale" content="zh_TW" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content={OG_LOCALE[locale]} />
+    {LOCALES.filter((l) => l !== locale).map((l) => (
+      <meta property="og:locale:alternate" content={OG_LOCALE[l]} />
+    ))}
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Kiro CLI 繁體中文教學" />
+    <meta property="og:image:alt" content={title} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     <link rel="icon" href={`${base}/favicon.svg`} type="image/svg+xml" />
   </head>
-  <body>
+  <body
+    data-copy={t(locale, 'code.copy')}
+    data-copied={t(locale, 'code.copied')}
+    data-copy-aria={t(locale, 'code.aria')}
+  >
     <header class="topbar">
-      <button class="menu-toggle" id="menuToggle" aria-label="開關選單">≡</button>
+      <button class="menu-toggle" id="menuToggle" aria-label={t(locale, 'nav.menu')}>≡</button>
       <span class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></span>
-      <a class="title" href={`${base}/`}><b>kiro-cli</b>&nbsp;guide&nbsp;—&nbsp;繁中教學</a>
+      <a class="title" href={homeHref}><b>kiro-cli</b>&nbsp;guide&nbsp;—&nbsp;{t(locale, 'site.titleSuffix')}</a>
       <span class="spacer"></span>
+      <nav class="lang-switch" aria-label={t(locale, 'nav.toLang')}>
+        {switchTargets.map(({ loc, href }) => (
+          loc === locale
+            ? <span class="lang-cur" aria-current="true">{LOCALE_LABEL[loc]}</span>
+            : <a class="lang-link" href={href} hreflang={HTML_LANG[loc]}>{LOCALE_LABEL[loc]}</a>
+        ))}
+      </nav>
     </header>
     <div class="layout">
       <slot />
@@ -56,7 +97,12 @@ const ogImage = new URL('og.png', Astro.site).href;
     </script>
     <script>
       // 為每個程式碼區塊加上「複製」按鈕(只鎖定 Shiki 產出的 pre.astro-code)
+      // 按鈕文字依語系從 <body> 的 data-* 取得
       document.addEventListener('DOMContentLoaded', () => {
+        const ds = document.body.dataset;
+        const T_COPY = ds.copy ?? 'Copy';
+        const T_COPIED = ds.copied ?? 'Copied';
+        const T_ARIA = ds.copyAria ?? 'Copy code';
         const blocks = document.querySelectorAll('.content pre.astro-code');
         blocks.forEach((pre) => {
           const wrap = document.createElement('div');
@@ -67,8 +113,8 @@ const ogImage = new URL('og.png', Astro.site).href;
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'copy-btn';
-          btn.textContent = '複製';
-          btn.setAttribute('aria-label', '複製程式碼');
+          btn.textContent = T_COPY;
+          btn.setAttribute('aria-label', T_ARIA);
           wrap.appendChild(btn);
 
           btn.addEventListener('click', async () => {
@@ -85,9 +131,9 @@ const ogImage = new URL('og.png', Astro.site).href;
               try { document.execCommand('copy'); } catch {}
               document.body.removeChild(ta);
             }
-            btn.textContent = '已複製';
+            btn.textContent = T_COPIED;
             btn.classList.add('copied');
-            setTimeout(() => { btn.textContent = '複製'; btn.classList.remove('copied'); }, 1500);
+            setTimeout(() => { btn.textContent = T_COPY; btn.classList.remove('copied'); }, 1500);
           });
         });
       });

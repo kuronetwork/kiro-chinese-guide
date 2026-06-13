@@ -1,0 +1,60 @@
+---
+title: Login & Account
+description: Log in, log out, confirm your identity and check your plan, plus the account-related commands.
+section: Getting Started
+order: 120
+---
+import Callout from '../../../components/Callout.astro';
+
+To use Kiro CLI's AI features, you need to log in to an account first.
+
+## Log in
+
+```bash
+kiro-cli login
+```
+
+Just follow the on-screen instructions to finish the verification. Your login state is saved for you, so you don't have to log in every time.
+
+## Confirm your current identity
+
+```bash
+kiro-cli whoami
+```
+
+It shows the info for the account you're currently logged in as. Handy when you're not sure which account you're using, or you suspect you're not logged in at all.
+
+## Check your profile
+
+```bash
+kiro-cli profile
+```
+
+This shows the profile tied to your current IdC user.
+
+## Log out
+
+```bash
+kiro-cli logout
+```
+
+## Manage it all under user
+
+The commands above are actually all available under `user` too, with the exact same functionality:
+
+```bash
+kiro-cli user login
+kiro-cli user logout
+kiro-cli user whoami
+kiro-cli user profile
+```
+
+<Callout type="tip">
+If the AI replies with an authentication-related error, first run `kiro-cli whoami` to check your login state. If needed, run `kiro-cli logout` then `kiro-cli login` to log back in.
+</Callout>
+
+<Callout type="warn">
+Account credentials are sensitive stuff. The config and cache files generated after you log in — don't paste their contents anywhere public, and don't commit them into version control.
+</Callout>
+
+With your account sorted, up next is the main act: `chat`.

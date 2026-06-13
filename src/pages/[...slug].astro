@@ -1,20 +1,61 @@
 ---
 import { getCollection, render } from 'astro:content';
 import DocsLayout from '../layouts/DocsLayout.astro';
+import { localeOf, baseKey, type Locale } from '../i18n/ui';
 
 export async function getStaticPaths() {
-  const docs = (await getCollection('docs')).sort((a, b) => a.data.order - b.data.order);
-  return docs.map((entry, i) => ({
-    params: { slug: entry.id },
-    props: {
-      entry,
-      prev: docs[i - 1] ? { id: docs[i - 1].id, title: docs[i - 1].data.title } : null,
-      next: docs[i + 1] ? { id: docs[i + 1].id, title: docs[i + 1].data.title } : null,
-    },
-  }));
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+  const all = await getCollection('docs');
+
+  // 依語系分組
+  const byLocale: Record<Locale, typeof all> = { 'zh-Hant': [], en: [] };
+  for (const e of all) byLocale[localeOf(e.id)].push(e);
+  (Object.keys(byLocale) as Locale[]).forEach((k) =>
+    byLocale[k].sort((a, b) => a.data.order - b.data.order)
+  );
+
+  // 兩語系各自的「基底鍵」集合,用來判斷對應翻譯是否存在
+  const keySet: Record<Locale, Set<string>> = {
+    'zh-Hant': new Set(byLocale['zh-Hant'].map((e) => baseKey(e.id))),
+    en: new Set(byLocale.en.map((e) => baseKey(e.id))),
+  };
+
+  const paths: any[] = [];
+  for (const loc of Object.keys(byLocale) as Locale[]) {
+    const docs = byLocale[loc];
+    docs.forEach((entry, i) => {
+      const bk = baseKey(entry.id);
+      const other: Locale = loc === 'en' ? 'zh-Hant' : 'en';
+      const otherExists = keySet[other].has(bk);
+      const otherHref =
+        other === 'en'
+          ? otherExists ? `${base}/en/${bk}/` : `${base}/en/`
+          : otherExists ? `${base}/${bk}/` : `${base}/`;
+
+      // hreflang:自己一定有,對方有翻譯才列出;x-default 指向中文
+      const alternates = [
+        { hreflang: 'zh-Hant', href: loc === 'zh-Hant' ? `${base}/${bk}/` : (keySet['zh-Hant'].has(bk) ? `${base}/${bk}/` : null) },
+        { hreflang: 'en', href: loc === 'en' ? `${base}/en/${bk}/` : (keySet.en.has(bk) ? `${base}/en/${bk}/` : null) },
+        { hreflang: 'x-default', href: keySet['zh-Hant'].has(bk) ? `${base}/${bk}/` : `${base}/en/${bk}/` },
+      ].filter((a) => a.href);
+
+      paths.push({
+        params: { slug: entry.id },
+        props: {
+          entry,
+          locale: loc,
+          switchHref: otherHref,
+          alternates,
+          prev: docs[i - 1] ? { id: docs[i - 1].id, title: docs[i - 1].data.title } : null,
+          next: docs[i + 1] ? { id: docs[i + 1].id, title: docs[i + 1].data.title } : null,
+        },
+      });
+    });
+  }
+  return paths;
 }
 
-const { entry, prev, next } = Astro.props;
+const { entry, locale, prev, next, switchHref, alternates } = Astro.props;
 const { Content } = await render(entry);
 ---
 <DocsLayout
@@ -22,8 +63,11 @@ const { Content } = await render(entry);
   description={entry.data.description}
   section={entry.data.section}
   current={entry.id}
+  locale={locale}
   prev={prev}
   next={next}
+  switchHref={switchHref}
+  alternates={alternates}
 >
   <Content />
 </DocsLayout>

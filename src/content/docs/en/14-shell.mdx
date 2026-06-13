@@ -1,0 +1,70 @@
+---
+title: Shell Integration & Themes
+description: init generates shell integration, inline completion, translate turns plain English into commands, theme for themes.
+section: Customization
+order: 610
+---
+import Callout from '../../../components/Callout.astro';
+
+This chapter is about wedging Kiro deeper into the terminal you use every day.
+
+## theme: themes
+
+```bash
+kiro-cli theme --list       # see which themes are available
+kiro-cli theme              # see the current theme
+kiro-cli theme <name>       # apply a theme
+kiro-cli theme --folder     # show where the themes folder lives
+```
+
+## translate: natural language to commands
+
+Forgot how to type that command? Say it in plain English and let Kiro translate it into a shell command for you:
+
+```bash
+kiro-cli translate find the 5 largest files in this folder
+kiro-cli translate compress all .log files into logs.tar.gz
+```
+
+<Callout type="tip">
+`translate` is perfect for those "I know what I want to do, but I can't remember the command" moments. It gives you the command first, you review and confirm it, then you run it yourself.
+</Callout>
+
+## init: generate shell integration
+
+`init` generates the integration dotfiles for your shell — bash / zsh / fish / nu are all supported:
+
+```bash
+# load it at the appropriate spot in .zshrc (early/late)
+eval "$(kiro-cli init zsh pre)"
+eval "$(kiro-cli init zsh post)"
+```
+
+For `<WHEN>`, put `pre` or `post` to decide whether it loads near the start or the end of your rc file.
+
+## inline: inline autocomplete
+
+While you're typing a command, it gives you inline completion suggestions in real time:
+
+```bash
+kiro-cli inline status      # check the current status
+kiro-cli inline enable      # enable
+kiro-cli inline disable     # disable
+kiro-cli inline show-customizations   # see available customizations
+kiro-cli inline set-customization     # pick a customization
+```
+
+## integrations: system integrations
+
+```bash
+kiro-cli integrations status      # status
+kiro-cli integrations install     # install
+kiro-cli integrations reinstall   # reinstall
+kiro-cli integrations uninstall   # remove
+```
+
+<Callout type="warn">
+What `init` prints out gets run by your shell's `eval`. Paste it into your own rc file (like `~/.zshrc`) — never pipe content of unknown origin straight into `eval`.
+</Callout>
+
+That covers most of the core features. Next, we'll use real-world scenarios to string them all together into one smooth workflow.

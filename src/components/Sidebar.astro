@@ -1,12 +1,15 @@
 ---
 import { getCollection } from 'astro:content';
+import { localeOf, DEFAULT_LOCALE, type Locale } from '../i18n/ui';
 
-interface Props { current: string }
-const { current } = Astro.props;
+interface Props { current: string; locale?: Locale }
+const { current, locale = DEFAULT_LOCALE } = Astro.props;
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
-const docs = (await getCollection('docs')).sort((a, b) => a.data.order - b.data.order);
+const docs = (await getCollection('docs'))
+  .filter((d) => localeOf(d.id) === locale)
+  .sort((a, b) => a.data.order - b.data.order);
 
 // 依 section 分組,保留第一次出現的順序
 const groups: { label: string; items: typeof docs }[] = [];

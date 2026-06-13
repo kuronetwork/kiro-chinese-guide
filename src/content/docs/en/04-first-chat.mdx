@@ -1,0 +1,87 @@
+---
+title: Your First Chat
+description: Starting chat, interactive mode and headless mode, common shortcuts and slash commands.
+section: Conversations
+order: 200
+---
+import Callout from '../../../components/Callout.astro';
+
+`chat` is the heart of Kiro CLI — every development task starts here.
+
+## Start an interactive chat
+
+Head into your project folder and type:
+
+```bash
+kiro-cli chat
+```
+
+Once you're in, just describe the task in natural language:
+
+```text
+❯ Which frameworks does this project use? Put together a list for me
+❯ Rename getUserName to getUsername in src/utils.ts, and update all references
+❯ Run the tests, and if any fail, fix them for me
+```
+
+## Start with a question right away
+
+You can also pass your first question in as an argument from the get-go:
+
+```bash
+kiro-cli chat "List all the files in the current folder"
+```
+
+## Headless mode (unattended)
+
+Add `--no-interactive` and it'll finish one task and exit straight away, without waiting for your input. Great for scripting and automation:
+
+```bash
+kiro-cli chat --no-interactive "Run npm test and summarize the results"
+```
+
+<Callout type="warn">
+In headless mode, if a tool needs approval but there's nobody around to press the button, the command will hang. So when running unattended, remember to pair it with trust flags (the next two chapters cover this in detail):
+
+```bash
+kiro-cli chat --no-interactive --trust-tools=read,grep "Find all the TODOs"
+```
+</Callout>
+
+## Common slash commands
+
+Inside a chat, anything starting with `/` is a slash command, used to control this session:
+
+| Command | Purpose |
+| --- | --- |
+| `/help` | Show help |
+| `/model` | Switch model |
+| `/effort` | Adjust reasoning effort |
+| `/tools` | View/trust tools |
+| `/agent` | Switch agent |
+| `/chat save` | Save this conversation |
+| `/chat load` | Load a previous conversation |
+| `/usage` | Check usage |
+
+## Common shortcuts
+
+| Key | Function |
+| --- | --- |
+| `Ctrl+R` | Search command history |
+| `Ctrl+C` | Cancel the current action or exit |
+| `↑` / `↓` | Browse input history |
+
+## TUI vs classic mode
+
+By default it uses the embedded TUI interface. If your Terminal has compatibility issues, you can switch back to the classic interface:
+
+```bash
+kiro-cli chat --classic     # classic (legacy) interface
+kiro-cli chat --tui         # explicitly specify the TUI interface
+```
+
+<Callout type="tip">
+Conversation history is stored separately **per folder**. What you chat about in project A's folder won't get mixed up with project B's, and `--resume` will only pull from the folder you're currently in.
+</Callout>
+
+Next chapter: let's pick a model and tune the effort.

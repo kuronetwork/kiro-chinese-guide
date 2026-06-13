@@ -1,0 +1,79 @@
+---
+title: Session Management & Resuming
+description: List, resume, and delete conversations, plus how to use save / load — and how conversations are isolated by folder.
+section: Conversations
+order: 220
+---
+import Callout from '../../../components/Callout.astro';
+
+Conversations are saved automatically so you can pick them back up the next day. Keep one key point in mind: **conversations are isolated by folder**.
+
+## List the conversations in this folder
+
+```bash
+kiro-cli chat --list-sessions
+# Shorthand
+kiro-cli chat -l
+```
+
+The output looks roughly like this:
+
+```text
+Chat sessions for /path/to/project:
+  Chat SessionId: f2946a26-...  2 hours ago | Implement auth | 15 msgs
+  Chat SessionId: 7bd2c90f-...  1 day ago    | Refactor db    | 23 msgs
+```
+
+## Resume a conversation
+
+```bash
+# Pick up the most recent conversation in this folder (restores the model it was using)
+kiro-cli chat --resume
+kiro-cli chat -r
+
+# Resume a specific one by session ID
+kiro-cli chat --resume-id f2946a26-3735-4b08-8d05-c928010302d5
+
+# Open the interactive menu to pick one to resume
+kiro-cli chat --resume-picker
+```
+
+<Callout type="tip">
+`--resume` restores the model that session was using at save time, too. Want to swap it out? Just add `--model` at the same time.
+</Callout>
+
+## Save / load inside a conversation
+
+```text
+/chat save my-feature-work
+/chat load my-feature-work
+```
+
+## Delete a conversation
+
+```bash
+kiro-cli chat --delete-session f2946a26-3735-4b08-8d05-c928010302d5
+# Shorthand
+kiro-cli chat -d <SESSION_ID>
+```
+
+## What's the point of folder-based isolation, anyway
+
+Because each conversation is tied to "the current directory path," you can:
+
+- Open several Terminals at once, each `cd`'d into a different project running `kiro-cli chat`, with no interference between them
+- Run `--resume` inside each project and only get that project's history
+
+```bash
+# Terminal A
+cd ~/proj/shop && kiro-cli chat
+
+# Terminal B (completely independent)
+cd ~/proj/blog && kiro-cli chat
+```
+
+<Callout type="warn">
+If `--resume` can't find a conversation, it's usually because you're not in the folder you started in. Conversations are per-directory — change directories and you won't see them anymore.
+</Callout>
+
+That covers the basics of conversations. Up next is the most important chapter: tools and trust.

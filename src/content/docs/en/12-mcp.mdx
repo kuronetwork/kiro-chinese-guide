@@ -1,0 +1,90 @@
+---
+title: MCP Integration
+description: Use the Model Context Protocol to bring external tools like git, GitHub, browsers, and docs into Kiro.
+section: Advanced Automation
+order: 520
+---
+import Callout from '../../../components/Callout.astro';
+
+MCP (Model Context Protocol) lets Kiro connect to external tool servers and expand its capabilities. Things like operating git, querying GitHub, controlling a browser, and reading official docs are all possible.
+
+## Managing MCP servers
+
+```bash
+kiro-cli mcp list                 # List configured servers
+kiro-cli mcp status               # Check the status of a server
+kiro-cli mcp add ...              # Add / replace
+kiro-cli mcp remove ...           # Remove
+kiro-cli mcp import ...           # Import from another config file
+```
+
+## Adding a local (stdio) server
+
+```bash
+kiro-cli mcp add \
+  --name git \
+  --command mcp-server-git \
+  --args "--stdio" \
+  --scope global
+```
+
+Common flags:
+
+| flag | Description |
+| --- | --- |
+| `--name` | Server name |
+| `--command` | Startup command (required for stdio servers) |
+| `--url` | Endpoint for an HTTP server (required for HTTP servers) |
+| `--args` | Arguments passed to the command (can be repeated or a JSON array) |
+| `--env` | Environment variables |
+| `--scope` | `default` / `workspace` / `global` |
+| `--agent` | Add to a specific agent (omit to write to the global mcp.json) |
+| `--timeout` | Startup timeout (milliseconds) |
+| `--disabled` | Add it but don't load it yet |
+| `--force` | Overwrite a server with the same name |
+
+## Adding a remote (HTTP) server
+
+```bash
+kiro-cli mcp add \
+  --name remote-api \
+  --url https://mcp.example.com/sse \
+  --scope global
+```
+
+## Writing it straight into the agent config
+
+You can also define it directly in the agent's `mcpServers`:
+
+```json
+{
+  "mcpServers": {
+    "git": { "command": "mcp-server-git", "args": ["--stdio"] },
+    "github": {
+      "command": "mcp-server-github",
+      "args": ["--stdio"],
+      "env": { "GITHUB_TOKEN": "$GITHUB_TOKEN" }
+    }
+  }
+}
+```
+
+## Trusting MCP tools
+
+MCP tool names look like this: `@<server>/<tool>`. Putting them in `allowedTools` means trusting them:
+
+```json
+{
+  "allowedTools": ["@git/*", "@github/get_*", "@github/list_*"]
+}
+```
+
+<Callout type="tip">
+After adding one, use `kiro-cli mcp status` to confirm the server came up properly. To see which tools this server provides and how their names are spelled, type `/tools` in the conversation.
+</Callout>
+
+<Callout type="warn">
+MCP servers are external programs that run directly on your machine. So only add sources you trust. Remember to bring tokens in the `env` through environment variables (like `$GITHUB_TOKEN`) — don't hardcode them in plaintext in the config file and then commit it.
+</Callout>
+
+That's it for advanced automation. Next, let's customize your own environment.

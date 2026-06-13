@@ -1,0 +1,91 @@
+---
+title: Three Automation Modes
+description: Combine trust settings into "safe-and-automatic / nearly fully automatic / fully automatic" launch commands, then turn them into aliases.
+section: Tools & Trust
+order: 310
+---
+import Callout from '../../../components/Callout.astro';
+
+The trust mechanism from the last chapter — this chapter turns it into three modes you'll use every day. The difference comes down to "how many actions skip approval."
+
+## Mode one: safe and automatic (recommended for daily use)
+
+```bash
+kiro-cli chat
+```
+
+Pair it with an agent that has `allowedTools` set up (read actions skip approval) plus a shell allowlist:
+
+- Reading files and searching skip approval
+- Commands on the allowlist (`git`, `npm`, `pnpm`, …) are allowed automatically
+- Writing files, and commands outside the allowlist, still ask you
+
+→ Automatic enough while still keeping guardrails — this is the right choice most of the time.
+
+## Mode two: nearly fully automatic (for projects you trust)
+
+```bash
+kiro-cli chat --trust-tools=read,write,grep,glob,code
+```
+
+- Building on mode one, **even writing files skips approval**
+- Shell is still gated by the agent allowlist
+
+→ Let it edit files freely, but arbitrary commands are still blocked.
+
+## Mode three: fully automatic (let it run / batch)
+
+```bash
+kiro-cli chat --trust-all-tools
+```
+
+- **All tools skip approval, including arbitrary shell**
+
+The version where no one's watching and it just finishes on its own:
+
+```bash
+kiro-cli chat --trust-all-tools --no-interactive "Read through the project, finish the TODOs, add tests and run them, then summarize"
+```
+
+<Callout type="danger">
+Mode three allows arbitrary commands like `rm` and `sudo`. Only use it in an environment you trust and where breakage doesn't matter — don't point it at important folders or production.
+</Callout>
+
+## Turn them into aliases
+
+Write the three modes into `~/.zshrc` (or `~/.bashrc`) so you only need to type a short name from now on:
+
+```bash
+alias k='kiro-cli chat'                                          # Mode one
+alias kw='kiro-cli chat --trust-tools=read,write,grep,glob,code' # Mode two
+alias kauto='kiro-cli chat --trust-all-tools'                    # Mode three
+```
+
+After saving, reload:
+
+```bash
+source ~/.zshrc
+```
+
+## Batch-run multiple projects
+
+Mode three combined with headless lets you sweep across several folders in parallel:
+
+```bash
+#!/usr/bin/env bash
+projects=(~/proj/a ~/proj/b ~/proj/c)
+for p in "${projects[@]}"; do
+  ( cd "$p" && kiro-cli chat --trust-all-tools --no-interactive \
+      "Finish this project's TODOs and run the tests, then summarize" > kiro-run.log 2>&1 ) &
+done
+wait
+echo "All done — see kiro-run.log in each project for results"
+```
+
+Each project runs in its own folder, logs are kept separate, and conversations are isolated by directory, so they won't collide with each other.
+
+<Callout type="tip">
+Both `--trust-tools` and `--trust-all-tools` only grant trust for **this one session** — once you close it, it's gone, and it won't dirty your default settings. For permanent approval-free access, write it into the agent's `allowedTools`.
+</Callout>
+
+In the next section we'll move on to agent configuration, turning this trust into reusable roles.

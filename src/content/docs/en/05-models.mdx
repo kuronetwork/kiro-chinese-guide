@@ -1,0 +1,94 @@
+---
+title: Models & Reasoning Effort
+description: Switch models, set a default model, tune reasoning effort, and learn how to save these preferences.
+section: Conversations
+order: 210
+---
+import Callout from '../../../components/Callout.astro';
+
+Different tasks call for different models and different "thinking depths." This chapter helps you pick the right model and set it as your default.
+
+## First, see what models are available
+
+```bash
+# Open the interactive menu inside a conversation
+/model
+
+# Or list them from the command line
+kiro-cli chat --list-models
+kiro-cli chat --list-models --format json-pretty
+```
+
+## Switch models
+
+```bash
+# Switch directly in a conversation (supports partial matching, case-insensitive)
+/model claude-sonnet-4
+
+# Specify at launch
+kiro-cli chat --model claude-opus-4.8 "Explain this codebase"
+```
+
+## Set a default model
+
+Want every new session to use the same model? Set it like this:
+
+```bash
+kiro-cli settings chat.defaultModel claude-opus-4.8
+```
+
+You can also save the model your current session is using as the default:
+
+```text
+/model set-current-as-default
+```
+
+When it comes to picking a model, the priority order is (highest to lowest):
+
+1. `--model` flag
+2. The model restored from a `--resume` session
+3. The `chat.defaultModel` setting
+4. System default
+
+## Reasoning effort
+
+`effort` controls how "deeply" the model thinks. The higher you go, the more carefully it thinks — but it's also slower and burns more usage:
+
+| Level | Description |
+| --- | --- |
+| `low` | Fastest, most economical |
+| `medium` | Balanced |
+| `high` | Thorough |
+| `xhigh` | Extended reasoning |
+| `max` | Highest (only supported by some Claude models) |
+
+```bash
+# Adjust in a conversation
+/effort high
+
+# Specify at launch
+kiro-cli chat --effort max "Do a security review of this PR for me"
+```
+
+<Callout type="tip">
+For quick Q&A, `low` is plenty; for complex refactors or design work, crank it up to `high` or `max`. Not every model supports effort — if the model you picked doesn't, `/effort` will nudge you to switch to one that does.
+</Callout>
+
+## Remember a default effort for each model
+
+In `~/.kiro/settings/cli.json`, use `chat.modelDefaults` to set a default effort for a specific model. For the Claude family, write it under `output_config.effort`:
+
+```json
+{
+  "chat.defaultModel": "claude-opus-4.8",
+  "chat.modelDefaults": {
+    "claude-opus-4.8": { "output_config": { "effort": "max" } }
+  }
+}
+```
+
+That way every new session applies it automatically, no need to pass the flag every time.
+
+The effort priority order (highest to lowest): `--effort` flag → the loaded session → the `cli.json` default → the model's built-in default.
+
+In the next chapter, we'll save conversations so you can pick up where you left off later.

@@ -1,0 +1,109 @@
+---
+title: Command Cheat Sheet
+description: Every top-level command in Kiro CLI 2.6.1, the most-used chat flags, and the slash commands available mid-conversation, all in one place.
+section: Reference
+order: 900
+---
+import Callout from '../../../components/Callout.astro';
+
+This is based on **Kiro CLI 2.6.1**. But the most up-to-date answer is always `kiro-cli <command> --help`.
+
+## Top-level commands
+
+| Command | Purpose |
+| --- | --- |
+| `chat` | The AI assistant in your terminal (the core) |
+| `agent` | Manage AI agents |
+| `mcp` | Manage MCP servers |
+| `acp` | Agent Client Protocol |
+| `settings` | Customize appearance and behavior |
+| `theme` | Get/set the theme |
+| `init` | Generate shell integration dotfiles |
+| `inline` | Inline shell completion |
+| `translate` | Natural language to shell commands |
+| `integrations` | Manage system integrations |
+| `login` / `logout` | Log in / log out |
+| `whoami` / `profile` | Show identity / profile |
+| `user` | Account management (includes login/logout/whoami/profile) |
+| `update` | Update Kiro |
+| `setup` | Set up CLI components |
+| `doctor` | Diagnose and fix common problems |
+| `diagnostic` | Output diagnostic info |
+| `debug` | Advanced debugging |
+| `issue` | Open a GitHub issue |
+| `dashboard` | Open the dashboard |
+| `launch` / `quit` / `restart` | Launch / quit / restart the desktop app |
+
+## Common chat flags
+
+| flag | Description |
+| --- | --- |
+| `--agent <name>` | Specify the agent |
+| `--model <model>` | Specify the model |
+| `--effort <level>` | Reasoning effort low/medium/high/xhigh/max |
+| `-a, --trust-all-tools` | No approval for any tool |
+| `--trust-tools=a,b` | Trust only the specified tools (`--trust-tools=` means trust none) |
+| `--no-interactive` | Headless; exits once done |
+| `-r, --resume` | Continue the most recent conversation |
+| `--resume-id <ID>` | Continue a specific session |
+| `--resume-picker` | Pick a conversation to continue from an interactive menu |
+| `-l, --list-sessions` | List the conversations in this folder |
+| `--list-models` | List available models |
+| `-d, --delete-session <ID>` | Delete a conversation |
+| `--tui` / `--classic` | TUI / classic interface |
+| `-v` | Increase log verbosity (repeatable) |
+
+## Slash commands mid-conversation
+
+| Command | Purpose |
+| --- | --- |
+| `/help` | Help |
+| `/model [name]` | Switch model / open menu |
+| `/effort [level]` | Adjust reasoning effort |
+| `/tools` | View tools |
+| `/tools trust <tool>` | Trust a tool for the session |
+| `/tools trust-all` | Trust everything for the session |
+| `/tools reset` | Restore the agent defaults |
+| `/agent` | Switch agent |
+| `/chat save <name>` | Save the conversation |
+| `/chat load <name>` | Load a conversation |
+| `/knowledge` | Manage the knowledge base |
+| `/usage` | View usage |
+
+## agent commands
+
+```bash
+kiro-cli agent list
+kiro-cli agent create <name> [-f template] [-d directory]
+kiro-cli agent edit <name>
+kiro-cli agent validate --path <file>
+kiro-cli agent set-default <name>
+```
+
+## mcp commands
+
+```bash
+kiro-cli mcp list
+kiro-cli mcp status
+kiro-cli mcp add --name <name> --command <command> [--args ...] [--scope global]
+kiro-cli mcp add --name <name> --url <URL>
+kiro-cli mcp remove --name <name>
+kiro-cli mcp import ...
+```
+
+## settings commands
+
+```bash
+kiro-cli settings <key> <value>      # set
+kiro-cli settings <key>              # read
+kiro-cli settings --delete <key>     # delete
+kiro-cli settings list [--all]       # list
+kiro-cli settings open               # open in editor
+# scope: --global (default) / --workspace
+```
+
+<Callout type="tip">
+Add `--help` after any command to see its full options; `kiro-cli --help-all` lists every subcommand in one shot. This table is a roundup of the common stuff, not every last detail.
+</Callout>
+
+That's the whole tutorial! Head back to the home page to see the full learning path, or jump back to any chapter for a refresher.

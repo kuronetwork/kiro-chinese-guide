@@ -1,0 +1,78 @@
+---
+title: Knowledge Bases
+description: Index code, docs, and PDFs into a knowledge base for semantic search, and tune indexing behavior with settings.
+section: Advanced Automation
+order: 510
+---
+import Callout from '../../../components/Callout.astro';
+
+A knowledge base lets you index a big pile of content (code, Markdown, CSV, PDF, and so on) all at once. After that, Kiro can run **semantic search** over this content, and it sticks around across sessions.
+
+## Turn the feature on first
+
+```bash
+kiro-cli settings chat.enableKnowledge true
+```
+
+It takes effect after you restart chat.
+
+## Using it in a conversation
+
+A knowledge base is managed with the `/knowledge` slash command. Common actions look like this:
+
+```text
+/knowledge            # See which knowledge bases you currently have
+```
+
+You can also just ask Kiro in natural language to do it for you, for example:
+
+```text
+❯ Add the ./docs folder to the knowledge base
+❯ Search my knowledge base for "database connection settings"
+❯ Update the index of the docs knowledge base
+```
+
+<Callout type="tip">
+Not sure which subcommands live under `/knowledge`? Type `/help` in the conversation to take a look, or just say what you want to do in natural language and let Kiro call it for you.
+</Callout>
+
+## Tuning indexing behavior (settings)
+
+Any preferences related to indexing can be configured with `kiro-cli settings`:
+
+```bash
+# File patterns to include / exclude when indexing (JSON arrays)
+kiro-cli settings knowledge.defaultIncludePatterns '["**/*.md","**/*.ts"]'
+kiro-cli settings knowledge.defaultExcludePatterns '["**/node_modules/**"]'
+
+# Max number of files to index
+kiro-cli settings knowledge.maxFiles 5000
+
+# Text chunk size and overlap
+kiro-cli settings knowledge.chunkSize 1024
+kiro-cli settings knowledge.chunkOverlap 128
+
+# Index type: fast (BM25 keyword) or best (semantic)
+kiro-cli settings knowledge.indexType best
+```
+
+| Setting | Description |
+| --- | --- |
+| `knowledge.defaultIncludePatterns` | File patterns to include in the index |
+| `knowledge.defaultExcludePatterns` | File patterns to exclude |
+| `knowledge.maxFiles` | Max number of files to index |
+| `knowledge.chunkSize` | Size of each text chunk |
+| `knowledge.chunkOverlap` | Overlap between text chunks |
+| `knowledge.indexType` | `fast` (BM25) or `best` (semantic) |
+
+## When to use it
+
+- The project is large and you want Kiro to quickly find the relevant passages
+- You have a batch of reference docs, specs, or PDFs you want Kiro to be able to look up anytime
+- You want to keep "background knowledge" around across many conversations
+
+<Callout type="warn">
+Indexing a huge pile of files takes time and resources. It's better to first narrow the scope with `includePatterns` / `excludePatterns`, and conveniently exclude things like `node_modules` and `dist`.
+</Callout>
+
+In the next chapter, let's look at how to bring external tools in using MCP.

@@ -1,0 +1,113 @@
+---
+title: Agent Configuration
+description: Use agents to package model, tools, trust, and context into reusable roles, plus create, edit, validate, and set defaults.
+section: Agents
+order: 400
+---
+import Callout from '../../../components/Callout.astro';
+
+An agent is just a JSON config. It packages together "which tools this role can use, how much it's trusted, what context to load, and which model to use" so you can reuse it.
+
+## Management commands
+
+```bash
+kiro-cli agent list                 # List available agents (local agents only show up in their directory)
+kiro-cli agent create my-agent      # Create (saved to the global directory by default)
+kiro-cli agent create my-agent -f default   # Use an existing agent as a template
+kiro-cli agent edit my-agent        # Edit
+kiro-cli agent validate --path ~/.kiro/agents/my-agent.json   # Validate
+kiro-cli agent set-default my-agent # Set as the default when chat starts
+```
+
+When you start up, specify which agent you want like this:
+
+```bash
+kiro-cli chat --agent my-agent
+```
+
+## Storage location and priority
+
+- **Local (project)**: `.kiro/agents/<name>.json`
+- **Global (user)**: `~/.kiro/agents/<name>.json`
+
+When both have the same name, **local wins over global**. So you can override the config just for a specific project.
+
+## Config structure
+
+A typical agent looks like this:
+
+```json
+{
+  "name": "dev",
+  "description": "Agent for project development",
+  "prompt": "You are a senior engineer who values security and readability.",
+  "model": "claude-opus-4.8",
+  "tools": ["read", "write", "shell", "grep", "glob", "code"],
+  "allowedTools": ["read", "grep", "glob", "code"],
+  "toolsSettings": {
+    "write": { "allowedPaths": ["./src/**", "./tests/**"], "deniedPaths": ["./.env"] },
+    "shell": { "allowedCommands": ["^npm ", "^git "], "autoAllowReadonly": true }
+  },
+  "resources": ["file://README.md", "file://src/**/*.ts"],
+  "hooks": {
+    "agentSpawn": [{ "command": "node -v && npm -v" }]
+  },
+  "mcpServers": {}
+}
+```
+
+### Key fields at a glance
+
+| Field | What it does |
+| --- | --- |
+| `prompt` | System prompt that defines the role and behavior (can reference external files with `file://`) |
+| `tools` | The tools this agent can use |
+| `allowedTools` | Tools that skip approval (permanently trusted) |
+| `toolsSettings` | Fine-grained rules for tools (paths, commands, URL allowlists) |
+| `resources` | Context files loaded at startup (`file://`, `skill://`) |
+| `hooks` | Commands run automatically at specific moments |
+| `model` | Specify the model |
+| `mcpServers` | The MCP servers this agent connects to |
+
+## resources: feeding context
+
+To have an agent read key files in the moment it starts up:
+
+```json
+{
+  "resources": [
+    "file://README.md",
+    "file://src/**/*.ts",
+    "skill://.kiro/skills/**/SKILL.md"
+  ]
+}
+```
+
+- Anything starting with `file://` always gets loaded
+- `skill://` are skills loaded only when needed; only the metadata is read at first
+
+## hooks: automatic hooks
+
+Run commands automatically at specific moments. For example, print the environment versions at startup, or run `git diff` before writing a file:
+
+```json
+{
+  "hooks": {
+    "agentSpawn":   [{ "command": "git status" }],
+    "preToolUse":   [{ "matcher": "write", "command": "git diff" }],
+    "postToolUse":  [{ "matcher": "shell", "command": "echo done" }]
+  }
+}
+```
+
+These are the moments you can hook into: `agentSpawn`, `userPromptSubmit`, `preToolUse`, `postToolUse`, `stop`.
+
+<Callout type="tip">
+Don't want to write one from scratch? The fastest way is `kiro-cli agent create my-agent -f default` — take your existing default as a template and just change a few fields. When you're done, remember to run `kiro-cli agent validate` to check the JSON against the schema.
+</Callout>
+
+<Callout type="warn">
+`agent migrate` converts old profiles into agents. The docs specifically flag that this action **may be destructive** to agents that already exist in the global directory. Before running it, back up `~/.kiro/agents/` first.
+</Callout>
+
+Once roles are reusable, the next section is about getting multiple agents to work in parallel.

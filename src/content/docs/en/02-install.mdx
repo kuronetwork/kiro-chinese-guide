@@ -1,0 +1,84 @@
+---
+title: Install & Update
+description: Confirm it's installed, keep your version current, and troubleshoot environment issues with doctor / diagnostic.
+section: Getting Started
+order: 110
+---
+import Callout from '../../../components/Callout.astro';
+
+Don't rush into using it right after installing. First make sure the CLI works and your version is new enough, then get started.
+
+## Confirm the installation
+
+```bash
+kiro-cli --version
+```
+
+Seeing a version number (like `kiro-cli 2.6.1`) means it's installed.
+
+## Update to the latest version
+
+Stay on the latest version so you get new features and security patches:
+
+```bash
+# Interactive update (asks you to confirm)
+kiro-cli update
+
+# Update without asking (good for scripts)
+kiro-cli update --non-interactive
+```
+
+## Health check: doctor
+
+`doctor` diagnoses common problems for you, and fixes the ones it can while it's at it:
+
+```bash
+# Diagnose and try to fix
+kiro-cli doctor
+
+# Diagnose only, don't touch anything (list all checks)
+kiro-cli doctor --all
+
+# Strict mode: treat even warnings as errors
+kiro-cli doctor --strict
+```
+
+<Callout type="tip">
+Something feels off after installing, a command can't be found, an integration stopped working? The first thing to do is run `kiro-cli doctor`.
+</Callout>
+
+## Collect diagnostic info: diagnostic
+
+When you want to report a problem, or dig in deeper, `diagnostic` dumps out all the details of your environment:
+
+```bash
+# Human-readable
+kiro-cli diagnostic
+
+# Machine-readable (handy for pasting into an issue)
+kiro-cli diagnostic --format json-pretty
+```
+
+## System integrations
+
+`integrations` manages the integrations between Kiro and your system (like the shell and Terminal plugins):
+
+```bash
+kiro-cli integrations status      # check current integration status
+kiro-cli integrations install     # install integrations
+kiro-cli integrations reinstall   # reinstall (when an integration is broken)
+```
+
+## Report a problem
+
+Hit a bug? Open a GitHub issue directly:
+
+```bash
+kiro-cli issue
+```
+
+<Callout type="warn">
+`update` replaces the Kiro app on your machine. If you're updating in a managed environment (like a company computer), make sure you have permission first, and use `--non-interactive` to hook into your deployment process if needed.
+</Callout>
+
+With your environment set up, the next chapter covers logging in and accounts.

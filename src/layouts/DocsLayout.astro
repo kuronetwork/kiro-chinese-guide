@@ -1,21 +1,36 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import Sidebar from '../components/Sidebar.astro';
+import { t, DEFAULT_LOCALE, type Locale } from '../i18n/ui';
 
 interface NavItem { id: string; title: string }
+interface Alternate { hreflang: string; href: string }
 interface Props {
   title: string;
   description?: string;
   section: string;
   current: string;
+  locale?: Locale;
   prev?: NavItem | null;
   next?: NavItem | null;
+  switchHref?: string;
+  alternates?: Alternate[];
 }
-const { title, description, section, current, prev, next } = Astro.props;
+const {
+  title, description, section, current,
+  locale = DEFAULT_LOCALE, prev, next, switchHref, alternates,
+} = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const siteName = locale === 'en' ? 'Kiro CLI Guide' : 'Kiro CLI 繁中教學';
 ---
-<BaseLayout title={`${title} · Kiro CLI 繁中教學`} description={description}>
-  <Sidebar current={current} />
+<BaseLayout
+  title={`${title} · ${siteName}`}
+  description={description}
+  locale={locale}
+  switchHref={switchHref}
+  alternates={alternates}
+>
+  <Sidebar current={current} locale={locale} />
   <main class="content">
     <div class="content-inner">
       <div class="page-eyebrow">{section}</div>
@@ -24,16 +39,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <article class="prose">
         <slot />
       </article>
-      <nav class="pager" aria-label="章節切換">
+      <nav class="pager" aria-label={t(locale, 'pager.aria')}>
         {prev ? (
           <a class="prev" href={`${base}/${prev.id}/`}>
-            <div class="dir">❮ 上一章</div>
+            <div class="dir">{t(locale, 'pager.prev')}</div>
             <div class="lbl">{prev.title}</div>
           </a>
         ) : <span style="flex:1"></span>}
         {next ? (
           <a class="next" href={`${base}/${next.id}/`}>
-            <div class="dir">下一章 ❯</div>
+            <div class="dir">{t(locale, 'pager.next')}</div>
             <div class="lbl">{next.title}</div>
           </a>
         ) : <span style="flex:1"></span>}
