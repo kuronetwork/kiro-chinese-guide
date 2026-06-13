@@ -42,6 +42,7 @@ for (const doc of docs) {
         <div class="cta">
           {first && <a class="btn primary" href={`${base}/${first.id}/`}>{t(locale, 'home.cta.start')}</a>}
           <a class="btn ghost" href="#path">{t(locale, 'home.cta.path')}</a>
+          <a class="btn ghost" href={`${base}${locale === 'en' ? '/en' : ''}/playground/`}>▶ {t(locale, 'game.entry')}</a>
         </div>
       </div>
     </section>

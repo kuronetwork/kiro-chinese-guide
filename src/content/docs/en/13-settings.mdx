@@ -64,7 +64,7 @@ kiro-cli settings chat.enableNotifications true
 | `chat.enableTodoList` | Enable the task list |
 | `chat.enableThinking` | Enable thinking |
 | `chat.enableNotifications` | Desktop notification when done |
-| `chat.disableAutoCompaction` | Turn off auto-compaction (keeps full context, uses more) |
+| `chat.disableAutoCompaction` | Turn off auto-compaction (keeps full context, uses more tokens) |
 | `telemetry.enabled` | Telemetry toggle |
 
 <Callout type="tip">
@@ -72,7 +72,7 @@ Not sure which settings you can tweak? Run `kiro-cli settings list --all` — it
 </Callout>
 
 <Callout type="warn">
-`chat.disableAutoCompaction true` lets long conversations keep their full context, at the cost of using more. And once a conversation gets long enough, you can still hit the context limit. Just leave auto-compaction on (it's on by default anyway) — don't go turning it off.
+`chat.disableAutoCompaction true` lets long conversations keep their full context, at the cost of higher token usage. And once a conversation gets long enough, you can still hit the context limit. Just leave auto-compaction on (it's on by default anyway) — don't go turning it off.
 </Callout>
 
 ## Example: set up your "fully automated dev" preferences in one go

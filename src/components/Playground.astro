@@ -1,0 +1,168 @@
+---
+import Sidebar from './Sidebar.astro';
+import { t, type Locale } from '../i18n/ui';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const base = import.meta.env.BASE_URL;
+
+const strings = {
+  level: t(locale, 'game.level'),
+  of: t(locale, 'game.of'),
+  goalLabel: t(locale, 'game.goalLabel'),
+  hint: t(locale, 'game.hint'),
+  showAnswer: t(locale, 'game.showAnswer'),
+  skip: t(locale, 'game.skip'),
+  next: t(locale, 'game.next'),
+  placeholder: t(locale, 'game.placeholder'),
+  correct: t(locale, 'game.correct'),
+  wrong: t(locale, 'game.wrong'),
+  answerLabel: t(locale, 'game.answerLabel'),
+  backToChapter: t(locale, 'game.backToChapter'),
+  safety: t(locale, 'game.safety'),
+  reset: t(locale, 'game.reset'),
+  doneTitle: t(locale, 'game.done.title'),
+  doneBody: t(locale, 'game.done.body'),
+  doneCta: t(locale, 'game.done.cta'),
+  doneRestart: t(locale, 'game.done.restart'),
+};
+---
+<Sidebar current="" locale={locale} />
+<main class="content">
+  <div class="pg-page">
+    <h1 class="pg-title">{t(locale, 'game.title')}</h1>
+    <p class="pg-subtitle">{t(locale, 'game.subtitle')}</p>
+
+    <div id="pg" data-locale={locale} data-base={base}>
+      <div id="pgGame">
+        <div class="pg-head">
+          <div class="pg-progress">
+            <span id="pgLevelNo" class="pg-levelno"></span>
+            <span id="pgDots" class="pg-dots"></span>
+          </div>
+          <button id="pgReset" type="button" class="pg-reset">{strings.reset}</button>
+        </div>
+
+        <div id="pgGoal" class="pg-goal"></div>
+
+        <div class="pg-term">
+          <div class="pg-term-bar">
+            <span class="d r"></span><span class="d y"></span><span class="d g"></span>
+            <span class="pg-term-name">zsh — kiro-cli · playground</span>
+          </div>
+          <div id="pgBody" class="pg-body" aria-live="polite"></div>
+          <form id="pgForm" class="pg-inputline" autocomplete="off">
+            <span class="pg-caret">❯</span>
+            <input
+              id="pgInput"
+              class="pg-input"
+              type="text"
+              autocomplete="off"
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
+              aria-label={t(locale, 'game.placeholder')}
+            />
+          </form>
+        </div>
+
+        <div id="pgMsg" class="pg-msg" role="status" aria-live="polite"></div>
+
+        <div class="pg-toolbar">
+          <button id="pgHint" type="button" class="pg-btn">{strings.hint}</button>
+          <button id="pgAnswer" type="button" class="pg-btn">{strings.showAnswer}</button>
+          <button id="pgSkip" type="button" class="pg-btn">{strings.skip}</button>
+          <a id="pgChapter" class="pg-btn pg-chapter"></a>
+          <span class="pg-spacer"></span>
+          <button id="pgNext" type="button" class="pg-btn pg-next" disabled>{strings.next}</button>
+        </div>
+
+        <p class="pg-safety">⛬ {strings.safety}</p>
+      </div>
+
+      <div id="pgDone" class="pg-done" hidden>
+        <div class="pg-badge">✓</div>
+        <h2>{strings.doneTitle}</h2>
+        <p>{strings.doneBody}</p>
+        <div class="pg-done-cta">
+          <a id="pgDoneCta" class="pg-btn pg-next">{strings.doneCta}</a>
+          <button id="pgRestart" type="button" class="pg-btn">{strings.doneRestart}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script type="application/json" id="pg-strings" is:inline set:html={JSON.stringify(strings)}></script>
+<script>
+  import { initPlayground } from '../scripts/playground';
+  initPlayground();
+</script>
+
+<style>
+  .pg-page { max-width: 880px; margin: 0 auto; }
+  .pg-title { font-family: var(--mono); font-size: 28px; color: var(--fg-strong); margin: 0 0 8px; font-weight: 700; }
+  .pg-title::before { content: '~/'; color: var(--faint); font-size: 0.7em; }
+  .pg-subtitle { color: var(--muted); font-size: 15px; margin: 0 0 24px; }
+
+  .pg-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .pg-progress { display: flex; align-items: center; gap: 12px; }
+  .pg-levelno { font-family: var(--mono); font-size: 13px; color: var(--accent); white-space: nowrap; }
+  .pg-dots { display: inline-flex; gap: 6px; }
+  .pg-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--border); border: 1px solid var(--border); transition: background .2s, transform .2s; }
+  .pg-dot.is-done { background: var(--accent-dim); border-color: var(--accent-dim); }
+  .pg-dot.is-current { background: var(--accent); border-color: var(--accent); transform: scale(1.25); }
+  .pg-reset { font-family: var(--mono); font-size: 11.5px; color: var(--faint); background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px; cursor: pointer; }
+  .pg-reset:hover { color: var(--red); border-color: var(--red); }
+
+  .pg-goal { font-size: 15px; color: var(--fg); margin-bottom: 14px; line-height: 1.6; }
+  .pg-goal-label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--amber); border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; margin-right: 6px; }
+
+  .pg-term { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #0a0d12; box-shadow: 0 18px 50px rgba(0,0,0,0.4); }
+  .pg-term-bar { display: flex; align-items: center; gap: 7px; padding: 9px 13px; background: var(--panel); border-bottom: 1px solid var(--border); }
+  .pg-term-bar .d { width: 12px; height: 12px; border-radius: 50%; }
+  .pg-term-bar .r { background: #ff5f57; } .pg-term-bar .y { background: #febc2e; } .pg-term-bar .g { background: #28c840; }
+  .pg-term-name { margin-left: 8px; font-family: var(--mono); font-size: 12px; color: var(--faint); }
+
+  .pg-body { font-family: var(--mono); font-size: 13.5px; line-height: 1.75; color: var(--fg); padding: 16px 16px 6px; min-height: 168px; max-height: 320px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; }
+  .pg-ln { animation: pgfade .18s ease both; }
+  .pg-comment { color: var(--faint); }
+  .pg-echo { color: var(--fg-strong); }
+  .pg-ok { color: var(--accent); }
+  .pg-step { color: var(--muted); }
+  @keyframes pgfade { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
+
+  .pg-inputline { display: flex; align-items: center; gap: 9px; padding: 10px 16px 16px; font-family: var(--mono); font-size: 13.5px; }
+  .pg-caret { color: var(--amber); }
+  .pg-input { flex: 1; background: none; border: none; outline: none; color: var(--fg-strong); font-family: var(--mono); font-size: 13.5px; caret-color: var(--accent); padding: 2px 0; }
+  .pg-input::placeholder { color: var(--faint); }
+  .pg-input:disabled { opacity: .5; }
+
+  .pg-msg { min-height: 22px; margin: 12px 2px 0; font-size: 14px; font-family: var(--mono); color: transparent; transition: color .15s; }
+  .pg-msg.is-ok { color: var(--accent); }
+  .pg-msg.is-wrong { color: var(--red); }
+  .pg-msg.is-hint { color: var(--amber); }
+
+  .pg-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .pg-spacer { flex: 1; }
+  .pg-btn { font-family: var(--mono); font-size: 13px; color: var(--fg); background: var(--panel); border: 1px solid var(--border); border-radius: 7px; padding: 8px 14px; cursor: pointer; transition: border-color .15s, color .15s, background .15s; }
+  .pg-btn:hover { border-color: var(--accent-dim); color: var(--accent); text-decoration: none; }
+  .pg-chapter { color: var(--muted); }
+  .pg-next { background: var(--accent); color: #06140f; border-color: var(--accent); font-weight: 700; }
+  .pg-next:hover { background: #7bf0c5; color: #06140f; }
+  .pg-next:disabled { background: var(--panel); color: var(--faint); border-color: var(--border); font-weight: 400; cursor: not-allowed; }
+
+  .pg-safety { margin-top: 16px; font-size: 12px; color: var(--faint); font-family: var(--mono); }
+
+  .pg-done { text-align: center; padding: 40px 20px; border: 1px solid var(--accent-dim); border-radius: 12px; background: var(--bg-soft); }
+  .pg-badge { width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; background: var(--accent); color: #06140f; font-size: 34px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 6px rgba(94,224,176,0.12); }
+  .pg-done h2 { font-family: var(--mono); color: var(--fg-strong); margin: 0 0 10px; border-top: 0; padding-top: 0; }
+  .pg-done h2::before { content: none; }
+  .pg-done p { color: var(--muted); max-width: 480px; margin: 0 auto 22px; line-height: 1.7; }
+  .pg-done-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  @media (max-width: 520px) {
+    .pg-toolbar .pg-spacer { display: none; }
+    .pg-next { width: 100%; margin-top: 4px; }
+  }
+</style>

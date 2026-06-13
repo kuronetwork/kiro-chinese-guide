@@ -25,6 +25,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const ogImage = new URL('og.png', Astro.site).href;
 
 const homeHref = locale === 'en' ? `${base}/en/` : `${base}/`;
+const playgroundHref = locale === 'en' ? `${base}/en/playground/` : `${base}/playground/`;
 const siteName = locale === 'en' ? 'Kiro CLI Guide' : 'Kiro CLI 繁中教學';
 
 // 語言切換器:目前語系標 active,另一語系連到 switchHref(沒給就退回該語系首頁)
@@ -75,6 +76,7 @@ const switchTargets: { loc: Locale; href: string }[] = LOCALES.map((loc) => {
       <span class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></span>
       <a class="title" href={homeHref}><b>kiro-cli</b>&nbsp;guide&nbsp;—&nbsp;{t(locale, 'site.titleSuffix')}</a>
       <span class="spacer"></span>
+      <a class="pg-link" href={playgroundHref}>▶&nbsp;{t(locale, 'game.entry')}</a>
       <nav class="lang-switch" aria-label={t(locale, 'nav.toLang')}>
         {switchTargets.map(({ loc, href }) => (
           loc === locale

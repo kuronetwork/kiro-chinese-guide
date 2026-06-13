@@ -149,6 +149,35 @@ code, kbd, pre, .mono { font-family: var(--mono); }
   font-weight: 700;
 }
 
+/* 頂部列:練習場入口 */
+.topbar .pg-link {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--amber);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 4px 11px;
+  white-space: nowrap;
+}
+.topbar .pg-link:hover {
+  border-color: var(--amber);
+  background: var(--panel);
+  text-decoration: none;
+}
+
+/* 側欄:置頂練習場入口 */
+.sidebar a.navlink.pg-pin {
+  color: var(--amber);
+  border: 1px solid var(--border);
+  margin-bottom: 18px;
+  font-family: var(--mono);
+  font-size: 13.5px;
+}
+.sidebar a.navlink.pg-pin:hover {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
 /* ---------- 側欄 ---------- */
 .sidebar {
   position: sticky;
